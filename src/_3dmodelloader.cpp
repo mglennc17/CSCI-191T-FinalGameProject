@@ -229,21 +229,25 @@ void _3DModelLoader::Draw()
   curent_time = (double)glutGet (GLUT_ELAPSED_TIME) / 1000.0;
 
   /* Animate model from frames 0 to num_frames-1 */
+  glPushMatrix();
+  glTranslatef(0,0,0);
   interp += 10 * (curent_time - last_time);
   Animate (StartFrame, EndFrame, &n, &interp);
 
   RenderFrameItpWithGLCmds (n, interp, &md2file);
+  glPopMatrix();
 }
 
 void _3DModelLoader::Actions()
 {
     switch(actionTrigger)
    {
-       case STAND: StartFrame=0; EndFrame =39;break;
-       case RUN: StartFrame=40; EndFrame =45;break;
-       case ATTACK: StartFrame=46; EndFrame =53;break;
-       case PAIN: StartFrame=47; EndFrame =65;break;
-       case JUMP: StartFrame=66; EndFrame =71;break;
+       StartFrame=3; EndFrame=7;
+       //case STAND: StartFrame=0; EndFrame =39;break;
+       //case RUN: StartFrame=40; EndFrame =45;break;
+       //case ATTACK: StartFrame=46; EndFrame =53;break;
+       //case PAIN: StartFrame=47; EndFrame =65;break;
+       //case JUMP: StartFrame=66; EndFrame =71;break;
    }
 }
 

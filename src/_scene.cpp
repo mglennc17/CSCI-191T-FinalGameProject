@@ -36,7 +36,7 @@ void _Scene::initGL()
 
     frameCount = 0;
 
-    glShadeModel(GL_SMOOTH); // to handle GPU shaders
+    glShadeModel(GL_FLAT); // to handle GPU shaders
     glClearColor(0.0f,0.0f,0.0f,0.0f); // black background color
     glClearDepth(2.0f);         //depth test for layers
     glEnable(GL_DEPTH_TEST);    //activate depth test
@@ -63,8 +63,9 @@ void _Scene::initGL()
     mySkyBox->tex[6] = mySkyBox->textures->loadTexture("images/Stairs.jpg");
 
     mySprite->spriteInit("images/eg.png",6,4);
-    mdl3D->initModel("models/Tekk/tris.md2");
-    mdl3DW->initModel("models/Tekk/weapon.md2");
+    mdl3D->initModel("models/carFULL.md2");
+
+    //mdl3DW->initModel("models/Tekk/weapon.md2");
 
     myCam->camInit();
 
@@ -93,16 +94,20 @@ void _Scene::drawScene()
 
     glPopMatrix();
 
-   glPushMatrix();
-        glTranslatef(mdl3D->pos.x,mdl3D->pos.y,mdl3D->pos.z);
+    carRot += 0.2;
 
+   glPushMatrix();
+
+        glTranslatef(0,0,-3);
         glRotatef(90,1,0,0);
         glRotatef(180,0,1,0);
+        glRotatef(carRot,0,0,1);
+        glTranslatef(0,-2.0,0);
+        //glTranslatef(mdl3D->pos.x,mdl3D->pos.y,mdl3D->pos.z);
 
-        glScalef(0.1,0.1,0.1);
         mdl3D->Actions();
-        mdl3DW->Actions();
-        mdl3DW->Draw();
+        //mdl3DW->Actions();
+        //mdl3DW->Draw();
         mdl3D->Draw();
     glPopMatrix();
 }

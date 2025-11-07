@@ -50,6 +50,8 @@ class _Scene
         uniform_int_distribution<mt19937::result_type> rand6;
         uniform_int_distribution<mt19937::result_type> rand100;
 
+        float carRot = 0;
+
     protected:
 
     private:

@@ -11,7 +11,7 @@ class _light
 
         void setLight(GLenum);
 
-        const float light_ambient[4] = {0,0,0,1};
+        const float light_ambient[4] = {0.4f,0.4f,0.4f,1};
         const float light_diffuse[4] = {1.0,1.0,1.0,1.0};
         const float light_specular[4]= {1.0,1.0,1.0,1.0};
 
