@@ -75,7 +75,7 @@ int _3DModelLoader::ReadMD2Model(const char* filename, struct md2_model_t* mdl)
 
     for(int i =0; i<mdl->header.num_skins; i++){
         cout<<mdl->skins[i].name<<endl;  // only for debug
-        myTex->loadTexture("models/Tekk/blade.jpg");
+        myTex->loadTexture("models/car/Tex.png");
         mdl->tex_id = myTex->textID;
     }
      EndFrame = mdl->header.num_frames-1;

@@ -63,7 +63,7 @@ void _Scene::initGL()
     mySkyBox->tex[6] = mySkyBox->textures->loadTexture("images/Stairs.jpg");
 
     mySprite->spriteInit("images/eg.png",6,4);
-    mdl3D->initModel("models/carFULL.md2");
+    mdl3D->initModel("models/car/Ford_Focus.md2");
 
     //mdl3DW->initModel("models/Tekk/weapon.md2");
 
@@ -102,7 +102,7 @@ void _Scene::drawScene()
         glRotatef(90,1,0,0);
         glRotatef(180,0,1,0);
         glRotatef(carRot,0,0,1);
-        glTranslatef(0,-2.0,0);
+        //glTranslatef(0,-2.0,0);
         //glTranslatef(mdl3D->pos.x,mdl3D->pos.y,mdl3D->pos.z);
 
         mdl3D->Actions();
