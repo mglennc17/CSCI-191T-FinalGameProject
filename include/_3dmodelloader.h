@@ -116,23 +116,24 @@ class _3DModelLoader
           struct md2_glcmd_t *packet;
           struct md2_model_t md2file;
 
-          int ReadMD2Model (const char *filename, struct md2_model_t *mdl);
+          int ReadMD2Model (const char *filename,char *skinFile, struct md2_model_t *mdl);
           void RenderFrame (int n, const struct md2_model_t *mdl);
           void RenderFrameItpWithGLCmds (int n, float interp, const struct md2_model_t *mdl);
           void Animate (int start, int end, int *frame, float *interp);
-          void initModel(const char *filename);
+          void initModel(const char *filename, char* skinFile);
           void Draw();
           void FreeModel (struct md2_model_t *mdl);
           void Actions();
 
 
           enum {STAND, WALKLEFT,WALKRIGHT,RUN,JUMP,ATTACK,PAIN};   // model actions
-          int actionTrigger =0;                                //Action Trigger
+          int actionTrigger =RUN;                                //Action Trigger
           int StartFrame =0;
           int EndFrame;
 
           vec3 pos;
           float dirAngleZ=180;
+          const char* skinFileName;
     protected:
 
     private:

@@ -13,7 +13,10 @@
 #include<_3dmodelloader.h>
 #include <_camera.h>
 #include <_car.h>
-
+#include <_obstacle.h>
+#include <_player.h>
+#include <_button.h>
+#include <_collisioncheck.h>
 
 class _Scene
 {
@@ -21,17 +24,40 @@ class _Scene
         _Scene();           //constructor
         virtual ~_Scene();  //Destructor
 
-        queue<_car> cars;
+        void mouseMapping(int,int);
+        vec2 mousePos;
+        double msX,msY,msZ;
 
         _light *myLight = new _light();   //light settings
-        _model *myModel = new _model();   //create a model
+        _collisionCheck *myCol = new _collisionCheck();
         _inputs *myInput = new _inputs(); // input handle
         _textureLoader *myTexture = new _textureLoader();// for loading images
-        _parallax *myPrlx = new _parallax();
-        _skyBox *mySkyBox = new _skyBox();
         _sprite *mySprite = new _sprite();
-        _timer *myTime = new _timer();
+        _timer *animationTimer = new _timer();
         _camera *myCam = new _camera();
+        _player *plyr = new _player();
+
+        _skyBox *carShop = new _skyBox();
+        _skyBox *daySky = new _skyBox();
+        _skyBox *duskSky = new _skyBox();
+        _skyBox *nightSky = new _skyBox();
+
+        _parallax *road = new _parallax();
+        _parallax *ground = new _parallax();
+
+        _parallax *landingPage = new _parallax();
+
+        _parallax menuBackground;
+        _parallax menuLogo;
+        _button mainMenuElements[3];
+        enum {help,newGame,exit};
+
+        _parallax pauseMenuBackground;
+        _button pauseMenuElements[2];
+        enum {pauseResume,pauseExit};
+
+        _parallax helpMenuBackground;
+        _button helpMenuReturn;
 
         _3DModelLoader *mdl3D = new _3DModelLoader();
         _3DModelLoader *mdl3DW = new _3DModelLoader();
@@ -43,6 +69,16 @@ class _Scene
 
         int width, height;  // keep record of the screen size
         int frameCount;
+
+        int gameState;
+        enum {landing,mainMenu,pauseMenu,inGame};
+
+        int curLevel;
+
+        bool helpMenu = false;
+        bool paused = false;
+        bool killWin = false;
+        bool escKeyRelease = true;
 
         random_device dev;
         mt19937 rng;

@@ -7,7 +7,7 @@ _Scene::_Scene()
     rand100 = uniform_int_distribution<mt19937::result_type>(1,100);
     rand6 = uniform_int_distribution<mt19937::result_type>(1,6);
     rand2 = uniform_int_distribution<mt19937::result_type>(1,2);
-    myTime->startTime = clock();
+    animationTimer->startTime = clock();
 }
 
 _Scene::~_Scene()
@@ -34,6 +34,7 @@ void _Scene::reSizeScene(int width, int height)
 void _Scene::initGL()
 {
 
+    gameState = mainMenu;
     frameCount = 0;
 
     glShadeModel(GL_FLAT); // to handle GPU shaders
@@ -49,21 +50,34 @@ void _Scene::initGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
+    daySky->skyBoxInit();
+    daySky->tex[0] = daySky->textures->loadTexture("images/skybox/day/back.png");
+    daySky->tex[1] = daySky->textures->loadTexture("images/skybox/day/front.png");
+    daySky->tex[2] = daySky->textures->loadTexture("images/skybox/day/top.png");
+    daySky->tex[3] = daySky->textures->loadTexture("images/skybox/day/bottom.png");
+    daySky->tex[4] = daySky->textures->loadTexture("images/skybox/day/right.png");
+    daySky->tex[5] = daySky->textures->loadTexture("images/skybox/day/left.png");
 
-    myTexture->loadTexture("images/tex.jpg");
-    myPrlx->parallaxInit("images/prlx.jpg");
+    landingPage->parallaxInit("images/menu/landingPage.png");
+    menuBackground.parallaxInit("images/menu/menuBackground.png");
+    menuLogo.parallaxInit("images/menu/menuLogo.png");
+    mainMenuElements[newGame].initButton("images/menu/newGame.png",-4.0,-2.5);
+    mainMenuElements[help].initButton("images/menu/help.png",0,-2.5);
+    mainMenuElements[exit].initButton("images/menu/exit.png",4.0,-2.5);
 
-    mySkyBox->skyBoxInit();
-    mySkyBox->tex[0] = mySkyBox->textures->loadTexture("images/front.jpg");
-    mySkyBox->tex[1] = mySkyBox->textures->loadTexture("images/back.jpg");
-    mySkyBox->tex[2] = mySkyBox->textures->loadTexture("images/top.jpg");
-    mySkyBox->tex[3] = mySkyBox->textures->loadTexture("images/bottom.jpg");
-    mySkyBox->tex[4] = mySkyBox->textures->loadTexture("images/right.jpg");
-    mySkyBox->tex[5] = mySkyBox->textures->loadTexture("images/left.jpg");
-    mySkyBox->tex[6] = mySkyBox->textures->loadTexture("images/Stairs.jpg");
+    pauseMenuBackground.parallaxInit("images/menu/pauseMenuBackground.png");
+    pauseMenuElements[pauseResume].initButton("images/menu/pauseMenuReturn.png",-2.0,-2.5);
+    pauseMenuElements[pauseExit].initButton("images/menu/pauseMenuExit.png",2.0,-2.5);
 
-    mySprite->spriteInit("images/eg.png",6,4);
-    mdl3D->initModel("models/car/Ford_Focus.md2");
+    helpMenuBackground.parallaxInit("images/menu/helpMenuBackground.png");
+    helpMenuReturn.initButton("images/menu/pauseMenuReturn.png",0,-2.5);
+
+    plyr->mdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");//,"models/car/Tex.png");
+    plyr->mdl->actionTrigger = plyr->mdl->STAND;
+    plyr->mdl->pos.x = 0;
+    plyr->mdl->pos.y = 1;
+    plyr->mdl->pos.z = -7;
+    plyr->scale = 1.0;
 
     //mdl3DW->initModel("models/Tekk/weapon.md2");
 
@@ -74,42 +88,82 @@ void _Scene::initGL()
 void _Scene::drawScene()
 {
 
-    frameCount++;
+   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);//clear bits in each itteration
+   glLoadIdentity();             // calling identity matrix
 
-    if (rand100(rng) == 1) {
-        cars.push(_car(1,rand6(rng),rand2(rng)));
-    }
+   myCam->setUpCamera();
+   myCam->des = plyr->mdl->pos;
 
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);//clear bits in each itteration
-    glLoadIdentity();             // calling identity matrix
+   switch (gameState) {
+   case inGame:
+       break;
 
-    myCam->setUpCamera();
+   case mainMenu:
+        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+        myCam->des.x = myCam->des.y = 0;
+        myCam->des.z = -10;
+        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+        glPushMatrix();
+            glScalef(4.33,4.33,1.0);
+            menuBackground.drawParallax(width,height);
+        glPopMatrix();
+        glPushMatrix();
+            plyr->drawPlayer();
+            plyr->rot.z += 0.2;
+        glPopMatrix();
+        glPushMatrix();
+            mainMenuElements[newGame].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0));
+            mainMenuElements[help].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[help].pos,0,0,2,1.0));
+            mainMenuElements[exit].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[exit].pos,0,0,1.8,1.0));
+        glPopMatrix();
+        if (mainMenuElements[newGame].clicked) { mainMenuElements[newGame].clicked = false; gameState = inGame; }
+        if (mainMenuElements[help].clicked) { mainMenuElements[help].clicked = false; helpMenu = true; }
+        if (mainMenuElements[exit].clicked) { mainMenuElements[exit].clicked = false; killWin = true; }
 
-    glPushMatrix();
-        glScalef(4.33,4.33,1);
-        mySkyBox->drawSkyBox();
-    glPopMatrix();
+        if(helpMenu) {
+            glPushMatrix();
+                glScalef(4.33,4.33,1.0);
+                helpMenuBackground.drawParallax(width,height);
+            glPopMatrix();
+            helpMenuReturn.drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0));
+            if (helpMenuReturn.clicked) { helpMenuReturn.clicked = false; helpMenu = false; }
+        }
+        break;
 
-    glPushMatrix();
+    case landing:
+        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+        myCam->des.x = myCam->des.y = 0;
+        myCam->des.z = -10;
+        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+        glPushMatrix();
+            glScalef(4.33,4.33,1.0);
+            landingPage->drawParallax(width,height);
+        glPopMatrix();
+        break;
 
-    glPopMatrix();
+   }
 
-    carRot += 0.2;
+}
 
-   glPushMatrix();
+void _Scene::mouseMapping(int x, int y)
+{
+    GLint viewPort[4];
+    GLdouble ModelViewM[16];
+    GLdouble projectionM[16];
+    GLfloat winX,winY,winZ;
 
-        glTranslatef(0,0,-3);
-        glRotatef(90,1,0,0);
-        glRotatef(180,0,1,0);
-        glRotatef(carRot,0,0,1);
-        //glTranslatef(0,-2.0,0);
-        //glTranslatef(mdl3D->pos.x,mdl3D->pos.y,mdl3D->pos.z);
+    glGetDoublev(GL_MODELVIEW_MATRIX, ModelViewM);
+    glGetDoublev(GL_PROJECTION_MATRIX,projectionM);
+    glGetIntegerv(GL_VIEWPORT,viewPort);
 
-        mdl3D->Actions();
-        //mdl3DW->Actions();
-        //mdl3DW->Draw();
-        mdl3D->Draw();
-    glPopMatrix();
+    winX =(GLfloat)x;
+    winY = (GLfloat)y;
+
+    glReadPixels(x,(int)winY,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&winZ);
+    gluUnProject(winX,winY,winZ,ModelViewM,projectionM,viewPort,&msX,&msY,&msZ);
+//    gluUnProject(winX,winY,-10.0,ModelViewM,projectionM,viewPort,&mousePos.x,&mousePos.y,&msZ);
+    mousePos.y = -msY;
+    mousePos.x = msX;
 }
 
 int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -118,12 +172,12 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case WM_KEYDOWN:
             myInput->wParam = wParam;
-            myInput->keyPressed(myModel);
-            myInput->keyPressed(myPrlx);
-            myInput->keyPressed(mySkyBox);
+//            myInput->keyPressed(plyr->mdl);
+            myInput->keyPressed(road);
+            myInput->keyPressed(daySky);
             myInput->keyPressed(mySprite);
             myInput->keyPressed(myCam);
-            myInput->keyPressed(mdl3D,mdl3DW);
+ //           myInput->keyPressed(mdl3D,mdl3DW);
         break;
 
         case WM_KEYUP:
@@ -135,17 +189,32 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_LBUTTONDOWN:
             myInput->wParam = wParam;
-            myInput->mouseEventDown(myModel,LOWORD(lParam),HIWORD(lParam));
+            if (gameState == mainMenu) {
+                if (helpMenu) {
+                    if (myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0)) helpMenuReturn.clicked = true;
+                }
+                else if (myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0)) mainMenuElements[newGame].clicked = true;
+                else if (myCol->isPlanoCol(mousePos,mainMenuElements[help].pos,0,0,1.8,1.0)) mainMenuElements[help].clicked = true;
+                else if (myCol->isPlanoCol(mousePos,mainMenuElements[exit].pos,0,0,1.8,1.0)) mainMenuElements[exit].clicked = true;
+            }
+
+            else if (gameState == inGame && paused) {
+                if (myCol->isPlanoCol(mousePos,pauseMenuElements[pauseResume].pos,0,0,1.8,1.0)) pauseMenuElements[pauseResume].clicked = true;
+                else if (myCol->isPlanoCol(mousePos,pauseMenuElements[pauseExit].pos,0,0,1.8,1.0)) pauseMenuElements[pauseExit].clicked = true;
+            }
+            if (gameState == landing) gameState = mainMenu;
+             mouseMapping(LOWORD(lParam), HIWORD(lParam));
+//            myInput->mouseEventDown(myModel,LOWORD(lParam),HIWORD(lParam));
         break;
 
         case WM_RBUTTONDOWN:
             myInput->wParam = wParam;
-            myInput->mouseEventDown(myModel,LOWORD(lParam),HIWORD(lParam));
+//            myInput->mouseEventDown(myModel,LOWORD(lParam),HIWORD(lParam));
         break;
 
          case WM_MBUTTONDOWN:
              myInput->wParam = wParam;
-             myInput->mouseEventDown(myModel,LOWORD(lParam),HIWORD(lParam));
+//             myInput->mouseEventDown(myModel,LOWORD(lParam),HIWORD(lParam));
         break;
 
         case WM_LBUTTONUP:
@@ -157,11 +226,12 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_MOUSEMOVE:
               myInput->wParam = wParam;
-              myInput->mouseMove(myModel,LOWORD(lParam),HIWORD(lParam));
+              mouseMapping(LOWORD(lParam), HIWORD(lParam));
+//              myInput->mouseMove(myModel,LOWORD(lParam),HIWORD(lParam));
             break;
         case WM_MOUSEWHEEL:
               myInput->wParam = wParam;
-              myInput->mouseWheel(myModel,(double)GET_WHEEL_DELTA_WPARAM(wParam));
+//              myInput->mouseWheel(myModel,(double)GET_WHEEL_DELTA_WPARAM(wParam));
             break;
 
         default:

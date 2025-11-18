@@ -18,6 +18,7 @@ _parallax::~_parallax()
 void _parallax::drawParallax(float w, float h)
 {
     glColor3f(1.0,1.0,1.0);
+    glDisable(GL_LIGHTING);
     btex->bindTexture();
 
    glBegin(GL_POLYGON);
@@ -35,6 +36,7 @@ void _parallax::drawParallax(float w, float h)
     glVertex3f(-w/h, 1,-10);
 
    glEnd();
+   glEnable(GL_LIGHTING);
 
 }
 

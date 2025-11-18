@@ -4,8 +4,8 @@ _3DModelLoader::_3DModelLoader()
 {
     //ctor
     pos.x =0;
-    pos.y =0;
-    pos.z =-10.0;
+    pos.y =-0.65;
+    pos.z =-15.0;
 }
 
 _3DModelLoader::~_3DModelLoader()
@@ -14,7 +14,7 @@ _3DModelLoader::~_3DModelLoader()
 
     FreeModel(&md2file);
 }
-int _3DModelLoader::ReadMD2Model(const char* filename, struct md2_model_t* mdl)
+int _3DModelLoader::ReadMD2Model(const char* filename, char* skinFile, struct md2_model_t* mdl)
 {
      FILE *fp;
 
@@ -75,7 +75,7 @@ int _3DModelLoader::ReadMD2Model(const char* filename, struct md2_model_t* mdl)
 
     for(int i =0; i<mdl->header.num_skins; i++){
         cout<<mdl->skins[i].name<<endl;  // only for debug
-        myTex->loadTexture("models/car/Tex.png");
+        myTex->loadTexture(skinFile);
         mdl->tex_id = myTex->textID;
     }
      EndFrame = mdl->header.num_frames-1;
@@ -196,8 +196,8 @@ void _3DModelLoader::RenderFrameItpWithGLCmds(int n, float interp, const struct 
 
 void _3DModelLoader::Animate(int start, int end, int* frame, float* interp)
 {
-         if ((*frame < start) || (*frame > end))
-    *frame = start;
+    if ((*frame < start) || (*frame > end))
+        *frame = start;
 
     if (*interp >= 1.0f)
     {
@@ -211,10 +211,10 @@ void _3DModelLoader::Animate(int start, int end, int* frame, float* interp)
 
 }
 
-void _3DModelLoader::initModel(const char* filename)
+void _3DModelLoader::initModel(const char* filename, char* skinFile)
 {
      /* Load MD2 model file */
-    if (!ReadMD2Model (filename, &md2file))
+    if (!ReadMD2Model (filename,skinFile, &md2file))
     exit (EXIT_FAILURE);
 }
 
@@ -229,25 +229,21 @@ void _3DModelLoader::Draw()
   curent_time = (double)glutGet (GLUT_ELAPSED_TIME) / 1000.0;
 
   /* Animate model from frames 0 to num_frames-1 */
-  glPushMatrix();
-  glTranslatef(0,0,0);
   interp += 10 * (curent_time - last_time);
   Animate (StartFrame, EndFrame, &n, &interp);
 
   RenderFrameItpWithGLCmds (n, interp, &md2file);
-  glPopMatrix();
 }
 
 void _3DModelLoader::Actions()
 {
     switch(actionTrigger)
    {
-       StartFrame=3; EndFrame=7;
-       //case STAND: StartFrame=0; EndFrame =39;break;
-       //case RUN: StartFrame=40; EndFrame =45;break;
-       //case ATTACK: StartFrame=46; EndFrame =53;break;
-       //case PAIN: StartFrame=47; EndFrame =65;break;
-       //case JUMP: StartFrame=66; EndFrame =71;break;
+       case STAND: StartFrame=0; EndFrame =39;break;
+       case RUN: StartFrame=40; EndFrame =46;break;
+       case ATTACK: StartFrame=46; EndFrame =53;break;
+       case PAIN: StartFrame=47; EndFrame =65;break;
+       case JUMP: StartFrame=66; EndFrame =71;break;
    }
 }
 
