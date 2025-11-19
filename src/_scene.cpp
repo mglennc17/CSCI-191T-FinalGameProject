@@ -146,7 +146,6 @@ void _Scene::drawScene()
                 if (animationTimer->getTicks() >= 5) {
                     ground->prlxScrollAuto("right",0.07);
                     road->prlxScrollAuto("right", 0.07);
-                    animationTimer->reset();
                 }
             glPopMatrix();
         }
@@ -196,7 +195,7 @@ void _Scene::drawScene()
         glPopMatrix();
         glPushMatrix();
             plyr->drawPlayer();
-            plyr->rot.z += 0.2;
+            if (animationTimer->getTicks() >= 5) plyr->rot.z += 0.2;
         glPopMatrix();
         glPushMatrix();
             mainMenuElements[newGame].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0));
@@ -242,6 +241,7 @@ void _Scene::drawScene()
         break;
 
    }
+   if (animationTimer->getTicks() >= 5) animationTimer->reset();
 
 }
 
