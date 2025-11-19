@@ -391,3 +391,7 @@ int WINAPI WinMain(
 	KillGLWindow();					    // Kill The Window
 	return (msg.wParam);				// Exit The Program
 }
+
+
+
+// Test commit from Ricardo, 2:43AM 11/19/2025
