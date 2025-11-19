@@ -36,6 +36,8 @@ class _Scene
         _timer *animationTimer = new _timer();
         _camera *myCam = new _camera();
         _player *plyr = new _player();
+        _3DModelLoader *obstacleMdl = new _3DModelLoader();
+        _obstacle obstcls[30];
 
         _skyBox *carShop = new _skyBox();
         _skyBox *daySky = new _skyBox();

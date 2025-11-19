@@ -25,5 +25,3 @@ void _button::drawButton(float w, float h, bool hover)
         btnImage->drawParallax(w,h);
     glPopMatrix();
 }
-
-

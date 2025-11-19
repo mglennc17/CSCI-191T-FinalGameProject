@@ -23,6 +23,9 @@ class _player
         float scale;
         bool invinsible = false;
 
+        int movement;
+        enum {menu,none,left,right};
+
     protected:
 
     private:

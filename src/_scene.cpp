@@ -50,6 +50,9 @@ void _Scene::initGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
+    obstacleMdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");
+    obstacleMdl->actionTrigger = obstacleMdl->STAND;
+
     daySky->skyBoxInit();
     daySky->tex[0] = daySky->textures->loadTexture("images/skybox/day/back.png");
     daySky->tex[1] = daySky->textures->loadTexture("images/skybox/day/front.png");
@@ -72,14 +75,31 @@ void _Scene::initGL()
     helpMenuBackground.parallaxInit("images/menu/helpMenuBackground.png");
     helpMenuReturn.initButton("images/menu/pauseMenuReturn.png",0,-2.5);
 
+    road->parallaxInit("images/textures/road.png");
+    road->xMax = 50;
+    road->yMax = 2;
+
+    ground->parallaxInit("images/textures/dirt.jpg");
+    ground->xMax = 50;
+    ground->yMax = 50;
+
     plyr->mdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");//,"models/car/Tex.png");
     plyr->mdl->actionTrigger = plyr->mdl->STAND;
-    plyr->mdl->pos.x = 0;
-    plyr->mdl->pos.y = 1;
-    plyr->mdl->pos.z = -7;
+    plyr->pos.x = 0;
+    plyr->pos.y = 1;
+    plyr->pos.z = -7;
     plyr->scale = 1.0;
 
-    //mdl3DW->initModel("models/Tekk/weapon.md2");
+    for (int i = 0; i < 10; i++) {
+        obstcls[i].rot.x = obstcls[i].rot.y = 0;
+        obstcls[i].rot.z = 270;
+        obstcls[i].scale = 0.1;
+        obstcls[i].pos.y = 0.2;
+        obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30);
+        //if (i % 3) obstcls[i].pos.x = -0.7;
+        //else if (i % 2) obstcls[i].pos.x = 0.7;
+        obstcls[i].pos.z = 15 + i * 6;
+    }
 
     myCam->camInit();
 
@@ -90,15 +110,82 @@ void _Scene::drawScene()
 
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);//clear bits in each itteration
    glLoadIdentity();             // calling identity matrix
-
    myCam->setUpCamera();
-   myCam->des = plyr->mdl->pos;
+
+   //myCam->setUpCamera();
+   //myCam->des = plyr->pos;
 
    switch (gameState) {
    case inGame:
-       break;
+       if (!paused) {
+            myCam->eye.x = plyr->pos.x;
+            myCam->des.x = plyr->pos.x;
+            glPushMatrix();
+                plyr->drawPlayer();
+            glPopMatrix();
+            for (int i = 0; i < 10; i++){
+                glPushMatrix();
+                if(animationTimer->getTicks() >= 5) obstcls[i].pos.z -= 0.1;
+                    obstcls[i].drawObstacle(obstacleMdl);
+                    if(obstcls[i].pos.z <= -20) { obstcls[i].pos.z = 40; obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30); }
+                glPopMatrix();
+            }
+            glPushMatrix();
+
+                daySky->drawSkyBox();
+                glPopMatrix();
+                glPushMatrix();
+                glRotatef(90.0,0,0,1.0);
+                glRotatef(90.0,0,1,0);
+                glTranslatef(0,0,10);
+                road->drawParallax(200.0,2.0);
+                glTranslatef(1,-1,0);
+                glScalef(1.0,200.0,1.0);
+                glTranslatef(0,0,-0.05);
+                ground->drawParallax(200.0,1.0);
+                if (animationTimer->getTicks() >= 5) {
+                    ground->prlxScrollAuto("right",0.07);
+                    road->prlxScrollAuto("right", 0.07);
+                    animationTimer->reset();
+                }
+            glPopMatrix();
+        }
+       else {
+            myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+            myCam->des.x = myCam->des.y = 0;
+            myCam->des.z = -10;
+            myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+            glPushMatrix();
+                glScalef(4.33,4.33,1.0);
+                pauseMenuBackground.drawParallax(width,height);
+            glPopMatrix();
+            glPushMatrix();
+                pauseMenuElements[pauseResume].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,pauseMenuElements[pauseResume].pos,0,0,1.8,1.0));
+                pauseMenuElements[pauseExit].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,pauseMenuElements[pauseExit].pos,0,0,1.8,1.0));
+            glPopMatrix();
+            if (pauseMenuElements[pauseResume].clicked) {
+                pauseMenuElements[pauseResume].clicked = false;
+                paused = false;
+                myCam->eye = plyr->pos;
+                myCam->des = plyr->pos;
+                myCam->eye.z -= 3;
+                myCam->eye.y += 1;
+            }
+            else if (pauseMenuElements[pauseExit].clicked) {
+                    pauseMenuElements[pauseExit].clicked = false;
+                    gameState = mainMenu;
+                    paused = false;
+
+                    plyr->pos.x = 0;
+                    plyr->pos.y = 1;
+                    plyr->pos.z = -7;
+                    plyr->scale = 1.0;
+            }
+        }
+        break;
 
    case mainMenu:
+       plyr->movement = plyr->menu;
         myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
         myCam->des.x = myCam->des.y = 0;
         myCam->des.z = -10;
@@ -116,7 +203,20 @@ void _Scene::drawScene()
             mainMenuElements[help].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[help].pos,0,0,2,1.0));
             mainMenuElements[exit].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[exit].pos,0,0,1.8,1.0));
         glPopMatrix();
-        if (mainMenuElements[newGame].clicked) { mainMenuElements[newGame].clicked = false; gameState = inGame; }
+        if (mainMenuElements[newGame].clicked) {
+            mainMenuElements[newGame].clicked = false;
+            plyr->rot.x = plyr->rot.y = 0;
+            plyr->rot.z = 270;
+            plyr->scale = 0.1;
+            plyr->pos.x = plyr->pos.z = 0;
+            plyr->pos.y = 0.12;
+            myCam->eye = plyr->pos;
+            myCam->des = plyr->pos;
+            myCam->eye.z -= 3;
+            myCam->eye.y += 1;
+            gameState = inGame;
+        }
+
         if (mainMenuElements[help].clicked) { mainMenuElements[help].clicked = false; helpMenu = true; }
         if (mainMenuElements[exit].clicked) { mainMenuElements[exit].clicked = false; killWin = true; }
 
@@ -173,18 +273,28 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_KEYDOWN:
             myInput->wParam = wParam;
 //            myInput->keyPressed(plyr->mdl);
-            myInput->keyPressed(road);
-            myInput->keyPressed(daySky);
-            myInput->keyPressed(mySprite);
-            myInput->keyPressed(myCam);
+            //myInput->keyPressed(road);
+            //myInput->keyPressed(daySky);
+            //myInput->keyPressed(mySprite);
+            //myInput->keyPressed(myCam);
+            if (gameState == landing) gameState = mainMenu;
+            if (gameState == inGame && wParam == 27 && escKeyRelease) {
+                escKeyRelease = false; paused = !paused;
+            }
+            if (gameState == inGame) {
+                if (wParam == 65) plyr->movement = plyr->right;
+                else if (wParam == 68) plyr->movement = plyr->left;
+            }
  //           myInput->keyPressed(mdl3D,mdl3DW);
         break;
 
         case WM_KEYUP:
             myInput->wParam = wParam;
-            myInput->keyUp(mySprite);
-            mdl3D->actionTrigger=mdl3D->STAND;
-            mdl3DW->actionTrigger=mdl3DW->STAND;
+            plyr->movement = plyr->none;
+            //myInput->keyUp(mySprite);
+            //mdl3D->actionTrigger=mdl3D->STAND;
+            //mdl3DW->actionTrigger=mdl3DW->STAND;
+            escKeyRelease = true;
         break;
 
         case WM_LBUTTONDOWN:

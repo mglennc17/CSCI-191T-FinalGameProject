@@ -1,6 +1,8 @@
 #ifndef _OBSTACLE_H
 #define _OBSTACLE_H
+
 #include <_3dmodelloader.h>
+
 
 class _obstacle
 {
@@ -8,10 +10,11 @@ class _obstacle
         _obstacle();
         virtual ~_obstacle();
 
-        _3DModelLoader *mdl = new _3DModelLoader();
-        vec3 pos;
+        void drawObstacle(_3DModelLoader *);
 
-        bool collided = false;
+        vec3 pos;
+        vec3 rot;
+        float scale;
 
     protected:
 
