@@ -47,14 +47,14 @@ void _parallax::parallaxInit(char* fileName)
 
 void _parallax::prlxScrollAuto(string dir , float speed)
 {
-    if(mytime->getTicks()>40)
-    {
+    //if(mytime->getTicks()>40)
+    //{
 
     if(dir == "left"){xMin +=speed;xMax += speed;}
     else if(dir == "right"){xMin -=speed;xMax -= speed;}
     else if(dir == "up"){yMin -=speed;yMax-=speed;}
     else if(dir == "down"){yMin +=speed;yMax+=speed;}
 
-    mytime->reset();
-    }
+    //mytime->reset();
+    //}
 }

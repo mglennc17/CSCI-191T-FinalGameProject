@@ -76,7 +76,7 @@ void _Scene::initGL()
     helpMenuReturn.initButton("images/menu/pauseMenuReturn.png",0,-2.5);
 
     road->parallaxInit("images/textures/road.png");
-    road->xMax = 50;
+    road->xMax = 25;
     road->yMax = 2;
 
     ground->parallaxInit("images/textures/dirt.jpg");
@@ -94,7 +94,7 @@ void _Scene::initGL()
         obstcls[i].rot.x = obstcls[i].rot.y = 0;
         obstcls[i].rot.z = 270;
         obstcls[i].scale = 0.1;
-        obstcls[i].pos.y = 0.2;
+        obstcls[i].pos.y = 0.11;
         obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30);
         //if (i % 3) obstcls[i].pos.x = -0.7;
         //else if (i % 2) obstcls[i].pos.x = 0.7;
@@ -123,11 +123,18 @@ void _Scene::drawScene()
             glPushMatrix();
                 plyr->drawPlayer();
             glPopMatrix();
+            if (animationTimer->getTicks()>= 10) {
+                for (int i = 0; i < 20; i++) {
+                    obstcls[i].pos.z -= 0.1;
+                    if(obstcls[i].pos.z <= -20) { obstcls[i].pos.z = 40; obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30); }
+                }
+                ground->prlxScrollAuto("right",0.03);
+                road->prlxScrollAuto("right", 0.03);
+                animationTimer->reset();
+            }
             for (int i = 0; i < 10; i++){
                 glPushMatrix();
-                if(animationTimer->getTicks() >= 5) obstcls[i].pos.z -= 0.1;
-                    obstcls[i].drawObstacle(obstacleMdl);
-                    if(obstcls[i].pos.z <= -20) { obstcls[i].pos.z = 40; obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30); }
+                obstcls[i].drawObstacle(obstacleMdl);
                 glPopMatrix();
             }
             glPushMatrix();
@@ -143,10 +150,6 @@ void _Scene::drawScene()
                 glScalef(1.0,200.0,1.0);
                 glTranslatef(0,0,-0.05);
                 ground->drawParallax(200.0,1.0);
-                if (animationTimer->getTicks() >= 5) {
-                    ground->prlxScrollAuto("right",0.07);
-                    road->prlxScrollAuto("right", 0.07);
-                }
             glPopMatrix();
         }
        else {
@@ -195,7 +198,7 @@ void _Scene::drawScene()
         glPopMatrix();
         glPushMatrix();
             plyr->drawPlayer();
-            if (animationTimer->getTicks() >= 5) plyr->rot.z += 0.2;
+            if (animationTimer->getTicks() >= 10) { plyr->rot.z += 0.2; animationTimer->reset(); }
         glPopMatrix();
         glPushMatrix();
             mainMenuElements[newGame].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0));
@@ -208,7 +211,7 @@ void _Scene::drawScene()
             plyr->rot.z = 270;
             plyr->scale = 0.1;
             plyr->pos.x = plyr->pos.z = 0;
-            plyr->pos.y = 0.12;
+            plyr->pos.y = 0.11;
             myCam->eye = plyr->pos;
             myCam->des = plyr->pos;
             myCam->eye.z -= 3;
@@ -241,7 +244,6 @@ void _Scene::drawScene()
         break;
 
    }
-   if (animationTimer->getTicks() >= 5) animationTimer->reset();
 
 }
 
