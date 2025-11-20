@@ -103,6 +103,9 @@ void _Scene::initGL()
 
     myCam->camInit();
 
+    menuMsc->initSounds();
+    menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
+
 }
 
 void _Scene::drawScene()
@@ -182,6 +185,7 @@ void _Scene::drawScene()
                     plyr->pos.y = 1;
                     plyr->pos.z = -7;
                     plyr->scale = 1.0;
+                    menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
             }
         }
         break;
@@ -217,6 +221,7 @@ void _Scene::drawScene()
             myCam->eye.z -= 3;
             myCam->eye.y += 1;
             gameState = inGame;
+            menuMsc->playMusic("sounds/14 Quiet Curves.mp3");
         }
 
         if (mainMenuElements[help].clicked) { mainMenuElements[help].clicked = false; helpMenu = true; }
@@ -244,7 +249,6 @@ void _Scene::drawScene()
         break;
 
    }
-
 }
 
 void _Scene::mouseMapping(int x, int y)

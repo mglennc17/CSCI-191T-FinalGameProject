@@ -17,6 +17,7 @@
 #include <_player.h>
 #include <_button.h>
 #include <_collisioncheck.h>
+#include <_sounds.h>
 
 class _Scene
 {
@@ -27,6 +28,8 @@ class _Scene
         void mouseMapping(int,int);
         vec2 mousePos;
         double msX,msY,msZ;
+
+        _sounds *menuMsc = new _sounds();
 
         _light *myLight = new _light();   //light settings
         _collisionCheck *myCol = new _collisionCheck();
@@ -81,6 +84,7 @@ class _Scene
         bool paused = false;
         bool killWin = false;
         bool escKeyRelease = true;
+        bool loaded = false;
 
         random_device dev;
         mt19937 rng;
