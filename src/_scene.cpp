@@ -137,7 +137,7 @@ void _Scene::drawScene()
             myCam->des.y += 0.5;
             myCam->rotAngle.x = 180;
             myCam->rotAngle.y = 0;
-            myCam->distance = 4.0 / (1 +  2 * plyr->speed);
+            myCam->distance = 4.0 / (1 +  4 * plyr->speed);
             myCam->rotateXY();
             myCam->setUpCamera();
 

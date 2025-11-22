@@ -45,7 +45,7 @@ void _player::drawPlayer()
         chrono::duration<float,milli>diff = nw - accelTmr;
         if (speed < maxSpeed) {
                 accel = diff.count()/100000;
-                accel *= (1 - ((speed) / (maxSpeed)));
+                accel *= (0.05 - ((0.05 * speed) / (maxSpeed)));
                 printf("%f\n",accel);
                 speed += accel;// * (diff.count());// * //accelTmr->getTicks();
         }
