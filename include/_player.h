@@ -12,6 +12,7 @@ class _player
 
         void drawPlayer();
         _timer *myTime = new _timer();
+        //_timer *accelTmr = new _timer();
         _timer *iFrames = new _timer();
 
         _3DModelLoader *mdl = new _3DModelLoader();
@@ -25,6 +26,13 @@ class _player
 
         int movement;
         enum {menu,none,left,right};
+
+        float speed;
+        float maxSpeed;
+        float accel;
+
+        bool accelerating;
+        chrono::time_point<chrono::system_clock> accelTmr;
 
     protected:
 

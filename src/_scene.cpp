@@ -20,9 +20,9 @@ void _Scene::reSizeScene(int width, int height)
     float aspectRatio = (float)width/(float)height;// keep track of the ratio
     glViewport(0,0,width,height); // adjust my viewport
 
-    glMatrixMode(GL_PROJECTION);  // To setup ptrojection
-    glLoadIdentity();             // calling identity matrix
-    gluPerspective(45, aspectRatio,0.1,1000.0); // setting perspective projection
+    //glMatrixMode(GL_PROJECTION);  // To setup ptrojection
+    //glLoadIdentity();             // calling identity matrix
+    //gluPerspective(45, aspectRatio,0.1,1000.0); // setting perspective projection
 
     this->width = GetSystemMetrics(SM_CXSCREEN);
     this->height= GetSystemMetrics(SM_CYSCREEN);
@@ -115,41 +115,42 @@ void _Scene::drawScene()
 {
 
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);//clear bits in each itteration
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   gluPerspective(45,(float)width/(float)height,0.1,1000.0);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+
    glLoadIdentity();             // calling identity matrix
-   myCam->setUpCamera();
-
-   //myCam->setUpCamera();
-   //myCam->des = plyr->pos;
-   glPushMatrix();
-
-   glBegin(GL_TRIANGLES);
-   glTranslatef(0,0,-2.0);
-   //glColor3f(0,1.0,0);
-   //for (int i = 0; i < vertices.size(); i++) {
-       //glVertex3fv(&vertices[i].x);
-        //glVertex3fv(&vertices[i].y);
-       //glVertex3fv(&vertices[i].z);
-   //adsdawd}
-
-   glEnd();
-   //glutSwapBuffers();
-   glPopMatrix();
 
    switch (gameState) {
    case inGame:
        if (!paused) {
-            myCam->eye.x = plyr->pos.x;
-            myCam->des.x = plyr->pos.x;
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            gluPerspective(45 * (plyr->speed + 1),(float)width/(float)height,0.1,1000.0);
+
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+
+            myCam->des = plyr->pos;
+            myCam->des.y += 0.5;
+            myCam->rotAngle.x = 180;
+            myCam->rotAngle.y = 0;
+            myCam->distance = 4.0 / (1 +  2 * plyr->speed);
+            myCam->rotateXY();
+            myCam->setUpCamera();
+
             glPushMatrix();
                 plyr->drawPlayer();
             glPopMatrix();
             if (animationTimer->getTicks()>= 10) {
                 for (int i = 0; i < 20; i++) {
-                    obstcls[i].pos.z -= 0.1;
+                    obstcls[i].pos.z -= (0.1 * plyr->speed);
                     if(obstcls[i].pos.z <= -20) { obstcls[i].pos.z = 40; obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30); }
                 }
-                ground->prlxScrollAuto("right",0.03);
-                road->prlxScrollAuto("right", 0.03);
+                ground->prlxScrollAuto("right",0.03 * plyr->speed);
+                road->prlxScrollAuto("right", 0.03 * plyr->speed);
                 animationTimer->reset();
             }
             for (int i = 0; i < 10; i++){
@@ -173,10 +174,11 @@ void _Scene::drawScene()
             glPopMatrix();
         }
        else {
-            myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
-            myCam->des.x = myCam->des.y = 0;
-            myCam->des.z = -10;
-            myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+            myCam->camReset();
+            //myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+            //myCam->des.x = myCam->des.y = 0;
+            //myCam->des.z = -10;
+            //myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
             glPushMatrix();
                 glScalef(4.33,4.33,1.0);
                 pauseMenuBackground.drawParallax(width,height);
@@ -305,6 +307,10 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 escKeyRelease = false; paused = !paused;
             }
             if (gameState == inGame) {
+                if (wParam == 87) {
+                    if (!plyr->accelerating) plyr->accelTmr = chrono::system_clock::now();
+                    plyr->accelerating = true;
+                }
                 if (wParam == 65) plyr->movement = plyr->right;
                 else if (wParam == 68) plyr->movement = plyr->left;
             }
@@ -314,6 +320,7 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_KEYUP:
             myInput->wParam = wParam;
             plyr->movement = plyr->none;
+            if (wParam == 87) plyr->accelerating = false;
             //myInput->keyUp(mySprite);
             //mdl3D->actionTrigger=mdl3D->STAND;
             //mdl3DW->actionTrigger=mdl3DW->STAND;
