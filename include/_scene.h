@@ -18,6 +18,7 @@
 #include <_button.h>
 #include <_collisioncheck.h>
 #include <_sounds.h>
+#include <_objLoader.h>
 
 class _Scene
 {
@@ -40,6 +41,7 @@ class _Scene
         _camera *myCam = new _camera();
         _player *plyr = new _player();
         _3DModelLoader *obstacleMdl = new _3DModelLoader();
+        _objLoader *obj = new _objLoader();
         _obstacle obstcls[30];
 
         _skyBox *carShop = new _skyBox();
@@ -91,6 +93,10 @@ class _Scene
         uniform_int_distribution<mt19937::result_type> rand2;
         uniform_int_distribution<mt19937::result_type> rand6;
         uniform_int_distribution<mt19937::result_type> rand100;
+
+        vector<vec3> vertices;
+    vector<vec2> uvs;
+    vector<vec3> normals;
 
         float carRot = 0;
 

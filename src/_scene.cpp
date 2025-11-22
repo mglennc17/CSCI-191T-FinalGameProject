@@ -106,6 +106,9 @@ void _Scene::initGL()
     menuMsc->initSounds();
     menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
 
+    //bool res = obj->loadOBJ("models/cube.obj",vertices,uvs,normals);
+
+
 }
 
 void _Scene::drawScene()
@@ -117,6 +120,20 @@ void _Scene::drawScene()
 
    //myCam->setUpCamera();
    //myCam->des = plyr->pos;
+   glPushMatrix();
+
+   glBegin(GL_TRIANGLES);
+   glTranslatef(0,0,-2.0);
+   //glColor3f(0,1.0,0);
+   //for (int i = 0; i < vertices.size(); i++) {
+       //glVertex3fv(&vertices[i].x);
+        //glVertex3fv(&vertices[i].y);
+       //glVertex3fv(&vertices[i].z);
+   //adsdawd}
+
+   glEnd();
+   //glutSwapBuffers();
+   glPopMatrix();
 
    switch (gameState) {
    case inGame:
