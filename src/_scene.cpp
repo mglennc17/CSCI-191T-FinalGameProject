@@ -31,6 +31,22 @@ void _Scene::reSizeScene(int width, int height)
     glLoadIdentity();             // calling identity matrix
 }
 
+
+void _Scene::resetObstacles()
+{
+    for (int i = 0; i < 10; i++) {
+        obstcls[i].rot.x = obstcls[i].rot.y = 0;
+        obstcls[i].rot.z = 270;
+        obstcls[i].scale = 0.1;
+        obstcls[i].pos.y = 0.11;
+        obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30);
+        //if (i % 3) obstcls[i].pos.x = -0.7;
+        //else if (i % 2) obstcls[i].pos.x = 0.7;
+        obstcls[i].pos.z = 15.0 + i * 6.0;
+    }
+}
+
+
 void _Scene::initGL()
 {
 
@@ -90,16 +106,7 @@ void _Scene::initGL()
     plyr->pos.z = -7;
     plyr->scale = 1.0;
 
-    for (int i = 0; i < 10; i++) {
-        obstcls[i].rot.x = obstcls[i].rot.y = 0;
-        obstcls[i].rot.z = 270;
-        obstcls[i].scale = 0.1;
-        obstcls[i].pos.y = 0.11;
-        obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30);
-        //if (i % 3) obstcls[i].pos.x = -0.7;
-        //else if (i % 2) obstcls[i].pos.x = 0.7;
-        obstcls[i].pos.z = 15 + i * 6;
-    }
+    resetObstacles();
 
     myCam->camInit();
 
@@ -110,6 +117,7 @@ void _Scene::initGL()
 
 
 }
+
 
 void _Scene::drawScene()
 {
@@ -126,6 +134,10 @@ void _Scene::drawScene()
    switch (gameState) {
    case inGame:
        if (!paused) {
+
+            // --- game logic update (health, collisions, etc) ---
+            updateInGame();
+
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             gluPerspective(45 * (plyr->speed + 1),(float)width/(float)height,0.1,1000.0);
@@ -138,12 +150,40 @@ void _Scene::drawScene()
             myCam->rotAngle.x = 180;
             myCam->rotAngle.y = 0;
             myCam->distance = 4.0 / (1 +  4 * plyr->speed);
+
+            // compute base camera position
             myCam->rotateXY();
-            myCam->setUpCamera();
+
+            // screen shake when recently hit
+            if (playerHealth.isFlashing()) {
+                // how strong the shake feels – tweak if too weak/strong
+                const float strength = 0.08;
+
+                // rand100(rng) gives [1..100], normalize to [-1..1]
+                float nx = ((float)rand100(rng) / 50.0) - 1.0;
+                float ny = ((float)rand100(rng) / 50.0) - 1.0;
+                float nz = ((float)rand100(rng) / 50.0) - 1.0;
+
+                myCam->eye.x += nx * strength;
+                myCam->eye.y += ny * strength * 0.5;  // smaller vertical shake
+                myCam->eye.z += nz * strength;
+                }
+                myCam->setUpCamera();
 
             glPushMatrix();
+                 if (playerHealth.isFlashing()) {
+                    glColor3f(1.0, 0.2, 0.2);   // red tint when recently hit
+                } else {
+                    glColor3f(1.0, 1.0, 1.0);   // normal color
+                }
+
                 plyr->drawPlayer();
+
+                // reset color so we don't tint other things
+                glColor3f(1.0, 1.0, 1.0);
             glPopMatrix();
+
+
             if (animationTimer->getTicks()>= 10) {
                 for (int i = 0; i < 20; i++) {
                     obstcls[i].pos.z -= (0.1 * plyr->speed);
@@ -230,6 +270,10 @@ void _Scene::drawScene()
         glPopMatrix();
         if (mainMenuElements[newGame].clicked) {
             mainMenuElements[newGame].clicked = false;
+
+            resetObstacles();       // make sure cars are in front again
+            playerHealth.reset();   // reset health on new game
+
             plyr->rot.x = plyr->rot.y = 0;
             plyr->rot.z = 270;
             plyr->scale = 0.1;
@@ -270,6 +314,7 @@ void _Scene::drawScene()
    }
 }
 
+
 void _Scene::mouseMapping(int x, int y)
 {
     GLint viewPort[4];
@@ -290,6 +335,73 @@ void _Scene::mouseMapping(int x, int y)
     mousePos.y = -msY;
     mousePos.x = msX;
 }
+
+
+void _Scene::updateInGame()
+{
+    // Approximate 60 FPS for now; you can replace with real dt later if needed
+    const float dt = 0.016;
+    playerHealth.update(dt);
+
+    checkPlayerObstacleCollisions();
+}
+
+
+void _Scene::checkPlayerObstacleCollisions()
+{
+    // Player position in 2D (X, Z plane)
+    vec3 p3 = plyr->pos;
+    vec2 p2;
+    p2.x = p3.x;
+    p2.y = p3.z;
+
+
+    // Player bounding box (tune these to match your car model size)
+    // tweak to change how size of hit box
+    float pW = 0.08;
+    float pH = 0.35;
+
+    for (int i = 0; i < 10; ++i) { // you spawn 10 in initGL
+        vec3 o3 = obstcls[i].pos;
+        vec2 o2;
+        o2.x = o3.x;
+        o2.y = o3.z;
+
+
+        float oW = 0.08;
+        float oH = 0.35;
+
+        if (myCol->isPlanoCol(p2, o2, pW, pH, oW, oH)) {
+
+        // was the player already in the “hit” state?
+        bool wasFlashing = playerHealth.isFlashing();
+
+        playerHealth.registerHit();
+
+        // play crash sound only on a *new* hit
+        if (!wasFlashing) {
+            menuMsc->playSounds("sounds/crashSound.mp3");
+        }
+
+        // If we hit the max collisions, handle "game over"
+        if (playerHealth.isDead()) {
+            gameState = mainMenu;
+            paused = false;
+
+            plyr->pos.x = 0;
+            plyr->pos.y = 1;
+            plyr->pos.z = -7;
+            plyr->scale = 1.0;
+
+            playerHealth.reset();
+            resetObstacles();
+            menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
+            return;
+        }
+      }
+   }
+}
+
 
 int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
