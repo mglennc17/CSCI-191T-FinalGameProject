@@ -110,7 +110,9 @@ void _Scene::initGL()
     menuMsc->initSounds();
     menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
 
-    myText->textInit("images/fonts/upper.png",9,3);
+    textUpper->textInit("images/fonts/upper.png",9,3);
+    textLower->textInit("images/fonts/lower.png",9,3);
+    textNum->textInit("images/fonts/numEtc.png",9,3);
 
     //bool res = obj->loadOBJ("models/cube.obj",vertices,uvs,normals);
 
@@ -285,7 +287,13 @@ void _Scene::drawScene()
             helpMenuReturn.drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0));
             if (helpMenuReturn.clicked) { helpMenuReturn.clicked = false; helpMenu = false; }
         }
-        myText->drawText("TEST TEXT",0.2);
+        glPushMatrix();
+            textUpper->drawText("TEST TEXT",0.2);
+            glTranslatef(0,-0.2,0);
+            textLower->drawText("TEST LOWER",0.2);
+            glTranslatef(0,-0.2,0);
+            textNum->drawText("ABCDE",0.2);
+        glPopMatrix();
         break;
 
     case landing:

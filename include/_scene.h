@@ -44,7 +44,9 @@ class _Scene
         _player *plyr = new _player();
         _3DModelLoader *obstacleMdl = new _3DModelLoader();
         _objLoader *obj = new _objLoader();
-        _textDisplay *myText = new _textDisplay();
+        _textDisplay *textUpper = new _textDisplay();
+        _textDisplay *textLower = new _textDisplay();
+        _textDisplay *textNum = new _textDisplay();
         _obstacle obstcls[30];
 
         _skyBox *carShop = new _skyBox();

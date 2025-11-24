@@ -36,15 +36,14 @@ void _textDisplay::drawText(char* str, float fontSize)
     for (int i = 0; i < strlen(str); i++) {
         if (isalpha(str[i])) idx = str[i] - 'A';
         else idx = 26;      //space
-        //if (isdigit(str[i])) idx = str[i] - '0' + 55;
 
         y = (idx / w);
         x = idx - (y * w);
 
-        xMin = (float)x/(float)w        +   (0.1/(float)w);
-        xMax = xMin + 0.7 /(float)w;//     -   (0.4/(float)w);
+        xMin = (float)x/(float)w        +   (0.05/(float)w);
+        xMax = xMin + 0.9 /(float)w;
         yMin = (float)y/(float)h        +   (0.2/(float)h);
-        yMax = yMin + 0.7 / (float)h;//    -   (0.4/(float)h);
+        yMax = yMin + 0.7 / (float)h;
         glPushMatrix();
         glTranslatef((i + 1) * 0.8,0,-5.0);
         glBegin(GL_QUADS);
