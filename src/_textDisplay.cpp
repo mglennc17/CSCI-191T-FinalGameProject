@@ -35,7 +35,8 @@ void _textDisplay::drawText(char* str, float fontSize)
     glScalef(1.0 * fontSize,1.0 * fontSize,1.0);
     for (int i = 0; i < strlen(str); i++) {
         if (isalpha(str[i])) idx = str[i] - 'A';
-        if (isdigit(str[i])) idx = str[i] - '0' + 55;
+        else idx = 26;      //space
+        //if (isdigit(str[i])) idx = str[i] - '0' + 55;
 
         y = (idx / w);
         x = idx - (y * w);

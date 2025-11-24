@@ -19,6 +19,7 @@
 #include <_collisioncheck.h>
 #include <_sounds.h>
 #include <_objLoader.h>
+#include <_playerHealth.h>
 #include <_textDisplay.h>
 
 class _Scene
@@ -102,9 +103,14 @@ class _Scene
 
         float carRot = 0;
 
+        void updateInGame();
+        void checkPlayerObstacleCollisions();
+
     protected:
 
     private:
+         _playerHealth playerHealth;           // new
+        void resetObstacles();
 };
 
 #endif // _SCENE_H
