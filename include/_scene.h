@@ -19,7 +19,7 @@
 #include <_collisioncheck.h>
 #include <_sounds.h>
 #include <_objLoader.h>
-#include <_playerHealth.h>
+#include <_textDisplay.h>
 
 class _Scene
 {
@@ -43,6 +43,7 @@ class _Scene
         _player *plyr = new _player();
         _3DModelLoader *obstacleMdl = new _3DModelLoader();
         _objLoader *obj = new _objLoader();
+        _textDisplay *myText = new _textDisplay();
         _obstacle obstcls[30];
 
         _skyBox *carShop = new _skyBox();
@@ -101,15 +102,9 @@ class _Scene
 
         float carRot = 0;
 
-        void updateInGame();
-        void checkPlayerObstacleCollisions();
-
     protected:
 
     private:
-        _playerHealth playerHealth;           // new
-        void resetObstacles();
-
 };
 
 #endif // _SCENE_H
