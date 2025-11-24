@@ -306,7 +306,7 @@ void _Scene::drawScene()
             glVertex2f(0,      height);
         glEnd();
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        glDisable(GL_BLEND);
+        //glDisable(GL_BLEND);
 
         // 3. Go back to the same projection style that the menu uses
         glMatrixMode(GL_PROJECTION);
@@ -317,9 +317,10 @@ void _Scene::drawScene()
 
         // Text (uses your PNG font)
         glPushMatrix();
-            goText->drawText((char*)"YOU CRASHED", 1.4f);
-            glTranslatef(0.0f, -0.4f, 0.0f);
-            goText->drawText((char*)"YOU CANT PARK THERE", 0.8f);
+            glTranslatef(-1.5,0,0);
+            textUpper->drawText((char*)"YOU CRASHED", 0.4f);
+            glTranslatef(0.5f, -0.4f, 0.0f);
+            textUpper->drawText((char*)"YOU CANT PARK THERE", 0.2f);
         glPopMatrix();
 
         // 4. Buttons – SAME pattern as main menu (no ortho here)
@@ -380,10 +381,10 @@ void _Scene::drawScene()
             plyr->rot.x = 0;
             plyr->rot.y = 0;
             plyr->rot.z = 270;
-            plyr->scale = 0.1f;
+            plyr->scale = 1.0f;
             plyr->pos.x = 0.0f;
-            plyr->pos.z = 0.0f;
-            plyr->pos.y = 0.11f;
+            plyr->pos.z = -7.0f;
+            plyr->pos.y = 1.0f;
             plyr->speed = 0.0f;
             plyr->accelerating = false;
 
@@ -424,6 +425,7 @@ void _Scene::drawScene()
             if (animationTimer->getTicks() >= 10) { plyr->rot.z += 0.2; animationTimer->reset(); }
         glPopMatrix();
         glPushMatrix();
+            printf("%f\t%f\t%f\n",mousePos.x,mousePos.y,msZ);
             mainMenuElements[newGame].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0));
             mainMenuElements[help].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[help].pos,0,0,2,1.0));
             mainMenuElements[exit].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[exit].pos,0,0,1.8,1.0));
@@ -456,13 +458,13 @@ void _Scene::drawScene()
             helpMenuReturn.drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0));
             if (helpMenuReturn.clicked) { helpMenuReturn.clicked = false; helpMenu = false; }
         }
-        glPushMatrix();
+        /*glPushMatrix();
             textUpper->drawText("TEST TEXT",0.2);
             glTranslatef(0,-0.2,0);
             textLower->drawText("TEST LOWER",0.2);
             glTranslatef(0,-0.2,0);
             textNum->drawText("ABCDE",0.2);
-        glPopMatrix();
+        glPopMatrix();*/
         break;
 
     case landing:
@@ -493,11 +495,14 @@ void _Scene::mouseMapping(int x, int y)
     winX =(GLfloat)x;
     winY = (GLfloat)y;
 
+
     glReadPixels(x,(int)winY,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&winZ);
-    gluUnProject(winX,winY,winZ,ModelViewM,projectionM,viewPort,&msX,&msY,&msZ);
+    gluUnProject(winX,winY,0.0,projectionM,ModelViewM,viewPort,&msX,&msY,&msZ);                 // get mouse pos without z (for buttons)
+    mousePos.y = -msY * 100;
+    mousePos.x = msX * 100;
+    glReadPixels(x,(int)winY,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&winZ);
+    gluUnProject(winX,winY,winZ,projectionM,ModelViewM,viewPort,&msX,&msY,&msZ);
 //    gluUnProject(winX,winY,-10.0,ModelViewM,projectionM,viewPort,&mousePos.x,&mousePos.y,&msZ);
-    mousePos.y = -msY;
-    mousePos.x = msX;
 }
 
 void _Scene::updateInGame()

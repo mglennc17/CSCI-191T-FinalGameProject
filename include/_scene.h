@@ -47,7 +47,7 @@ class _Scene
         _textDisplay *textUpper = new _textDisplay();
         _textDisplay *textLower = new _textDisplay();
         _textDisplay *textNum = new _textDisplay();
-        _obstacle obstcls[30];
+        _obstacle obstcls[20];
 
         _skyBox *carShop = new _skyBox();
         _skyBox *daySky = new _skyBox();
