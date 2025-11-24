@@ -71,6 +71,11 @@ class _Scene
         _parallax helpMenuBackground;
         _button helpMenuReturn;
 
+        _textDisplay *goText = new _textDisplay();
+        enum gameOverButtonsIndex { goPlayAgain = 0, goMainMenu = 1 };
+        _button gameOverButtons[2];
+        bool justCrashed = false;
+
         _3DModelLoader *mdl3D = new _3DModelLoader();
         _3DModelLoader *mdl3DW = new _3DModelLoader();
 
@@ -83,7 +88,7 @@ class _Scene
         int frameCount;
 
         int gameState;
-        enum {landing,mainMenu,pauseMenu,inGame};
+        enum {landing,mainMenu,pauseMenu,inGame,gameOver};
 
         int curLevel;
 

@@ -89,6 +89,12 @@ void _Scene::initGL()
     helpMenuBackground.parallaxInit("images/menu/helpMenuBackground.png");
     helpMenuReturn.initButton("images/menu/pauseMenuReturn.png",0,-2.5);
 
+    goText = new _textDisplay();
+    goText->textInit("images/fonts/upper.png",8,4);
+    gameOverButtons[goPlayAgain].initButton("images/menu/pauseMenuReturn.png", -2.0f, -2.5f);
+    gameOverButtons[goMainMenu].initButton("images/menu/pauseMenuExit.png",   2.0f, -2.5f);
+
+
     road->parallaxInit("images/textures/road.png");
     road->xMax = 25;
     road->yMax = 2;
@@ -239,6 +245,169 @@ void _Scene::drawScene()
             }
         }
         break;
+      case gameOver:
+        // 1. Draw the world frozen (same camera as inGame but no updateInGame)
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(45 * (plyr->speed + 1),(float)width/(float)height,0.1,1000.0);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        myCam->des = plyr->pos;
+        myCam->des.y += 0.5f;
+        myCam->rotAngle.x = 180;
+        myCam->rotAngle.y = 0;
+        myCam->distance = 4.0f / (1.0f + 4.0f * plyr->speed);
+        myCam->rotateXY();
+        myCam->setUpCamera();
+
+        // Draw player & obstacles exactly like inGame, but without moving them
+        glPushMatrix();
+            plyr->drawPlayer();
+        glPopMatrix();
+
+        for (int i = 0; i < 10; i++) {
+            glPushMatrix();
+                obstcls[i].drawObstacle(obstacleMdl);
+            glPopMatrix();
+        }
+
+        glPushMatrix();
+            daySky->drawSkyBox();
+        glPopMatrix();
+
+        glPushMatrix();
+            glRotatef(90.0,0,0,1.0);
+            glRotatef(90.0,0,1,0);
+            glTranslatef(0,0,10);
+            road->drawParallax(200.0,2.0);
+            glTranslatef(1,-1,0);
+            glScalef(1.0,200.0,1.0);
+            glTranslatef(0,0,-0.05);
+            ground->drawParallax(200.0,1.0);
+        glPopMatrix();
+
+        // 2. Draw dark overlay in screen space
+        glDisable(GL_DEPTH_TEST);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluOrtho2D(0, width, 0, height);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glEnable(GL_BLEND);
+        glColor4f(0.0f, 0.0f, 0.0f, 0.6f);
+        glBegin(GL_QUADS);
+            glVertex2f(0,      0);
+            glVertex2f(width,  0);
+            glVertex2f(width,  height);
+            glVertex2f(0,      height);
+        glEnd();
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        glDisable(GL_BLEND);
+
+        // 3. Go back to the same projection style that the menu uses
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(45,(float)width/(float)height,0.1,1000.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // Text (uses your PNG font)
+        glPushMatrix();
+            goText->drawText((char*)"YOU CRASHED", 1.4f);
+            glTranslatef(0.0f, -0.4f, 0.0f);
+            goText->drawText((char*)"YOU CANT PARK THERE", 0.8f);
+        glPopMatrix();
+
+        // 4. Buttons – SAME pattern as main menu (no ortho here)
+        glPushMatrix();
+            gameOverButtons[goPlayAgain].drawButton(
+                width/10,
+                height/10,
+                myCol->isPlanoCol(mousePos, gameOverButtons[goPlayAgain].pos, 0,0,1.8,1.0)
+            );
+            gameOverButtons[goMainMenu].drawButton(
+                width/10,
+                height/10,
+                myCol->isPlanoCol(mousePos, gameOverButtons[goMainMenu].pos, 0,0,1.8,1.0)
+            );
+        glPopMatrix();
+
+        // 5. Handle clicks for game over buttons
+        if (gameOverButtons[goPlayAgain].clicked) {
+            gameOverButtons[goPlayAgain].clicked = false;
+
+            // Reset player state (same as starting a new game from main menu)
+            plyr->rot.x = 0;
+            plyr->rot.y = 0;
+            plyr->rot.z = 270;
+            plyr->scale = 0.1f;
+            plyr->pos.x = 0.0f;
+            plyr->pos.z = 0.0f;
+            plyr->pos.y = 0.11f;
+            plyr->speed = 0.0f;
+            plyr->accelerating = false;
+
+            // Reset obstacles to starting positions
+            for (int i = 0; i < 10; i++) {
+                obstcls[i].rot.x = obstcls[i].rot.y = 0;
+                obstcls[i].rot.z = 270;
+                obstcls[i].scale = 0.1f;
+                obstcls[i].pos.y = 0.11f;
+                obstcls[i].pos.x = 1.05f - (rand6(rng) * 0.30f);
+                obstcls[i].pos.z = 15 + i * 6;
+            }
+
+            // Reset camera like main menu "New Game"
+            myCam->eye = plyr->pos;
+            myCam->des = plyr->pos;
+            myCam->eye.z -= 3.0f;
+            myCam->eye.y += 1.0f;
+
+            // Reset health
+            playerHealth.reset();
+
+            // Stay in gameplay, keep game music
+            gameState = inGame;
+        }
+        else if (gameOverButtons[goMainMenu].clicked) {
+            gameOverButtons[goMainMenu].clicked = false;
+
+            // Reset player + obstacles + health
+            plyr->rot.x = 0;
+            plyr->rot.y = 0;
+            plyr->rot.z = 270;
+            plyr->scale = 0.1f;
+            plyr->pos.x = 0.0f;
+            plyr->pos.z = 0.0f;
+            plyr->pos.y = 0.11f;
+            plyr->speed = 0.0f;
+            plyr->accelerating = false;
+
+            for (int i = 0; i < 10; i++) {
+                obstcls[i].rot.x = obstcls[i].rot.y = 0;
+                obstcls[i].rot.z = 270;
+                obstcls[i].scale = 0.1f;
+                obstcls[i].pos.y = 0.11f;
+                obstcls[i].pos.x = 1.05f - (rand6(rng) * 0.30f);
+                obstcls[i].pos.z = 15 + i * 6;
+            }
+
+            playerHealth.reset();
+
+            // Switch back to menu music
+            menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
+            gameState = mainMenu;
+        }
+
+        glEnable(GL_DEPTH_TEST);
+        justCrashed = false;    // we’ve shown the screen now
+        break;
+
+
 
    case mainMenu:
        plyr->movement = plyr->menu;
@@ -333,7 +502,7 @@ void _Scene::mouseMapping(int x, int y)
 
 void _Scene::updateInGame()
 {
-    // Approximate 60 FPS for now; you can replace with real dt later if needed
+    // Approximate 60 FPS for now, can replace with real dt later if needed
     const float dt = 0.016;
     playerHealth.update(dt);
     checkPlayerObstacleCollisions();
@@ -341,18 +510,19 @@ void _Scene::updateInGame()
 
 void _Scene::checkPlayerObstacleCollisions()
 {
+    // Only process collisions while actually in gameplay
+    if (gameState != inGame) return;
+
     // Player position in 2D (X, Z plane)
     vec3 p3 = plyr->pos;
     vec2 p2;
     p2.x = p3.x;
     p2.y = p3.z;
 
-
-    // Player bounding box (tune these to match your car model size)
+    // Player bounding box (tune these to match car model size)
     // tweak to change how size of hit box
     float pW = 0.08;
     float pH = 0.35;
-
 
     for (int i = 0; i < 10; ++i) { // you spawn 10 in initGL
         vec3 o3 = obstcls[i].pos;
@@ -360,42 +530,38 @@ void _Scene::checkPlayerObstacleCollisions()
         o2.x = o3.x;
         o2.y = o3.z;
 
-
         float oW = 0.08;
         float oH = 0.35;
 
-
         if (myCol->isPlanoCol(p2, o2, pW, pH, oW, oH)) {
 
+            // was the player already in the "hit" state?
+            bool wasFlashing = playerHealth.isFlashing();
 
-        // was the player already in the “hit” state?
-        bool wasFlashing = playerHealth.isFlashing();
+            playerHealth.registerHit();
 
+            // If this hit killed the player, go straight to Game Over
+            if (playerHealth.isDead()) {
+                gameState   = gameOver;
+                paused      = false;
+                justCrashed = true;
 
-        playerHealth.registerHit();
+                // Stop the car so camera stays stable
+                plyr->speed        = 0.0;
+                plyr->accelerating = false;
 
+                // Optional: special third-crash sound
+                // menuMsc->playSounds("sounds/thirdCrash.m4a");
 
-        // play crash sound only on a *new* hit
-        if (!wasFlashing) {
-            menuMsc->playSounds("sounds/crashSound.mp3");
+                return; // no need to check other obstacles this frame
+            }
+
+            // Otherwise, play normal crash sound only for a *new* hit
+            if (!wasFlashing) {
+                menuMsc->playSounds("sounds/crashSound.mp3");
+            }
         }
-
-
-        // If we hit the max collisions, handle "game over"
-        if (playerHealth.isDead()) {
-            gameState = mainMenu;
-            paused = false;
-            plyr->pos.x = 0;
-            plyr->pos.y = 1;
-            plyr->pos.z = -7;
-            plyr->scale = 1.0;
-            playerHealth.reset();
-            resetObstacles();
-            menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
-            return;
-        }
-      }
-   }
+    }
 }
 
 int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -448,6 +614,14 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             else if (gameState == inGame && paused) {
                 if (myCol->isPlanoCol(mousePos,pauseMenuElements[pauseResume].pos,0,0,1.8,1.0)) pauseMenuElements[pauseResume].clicked = true;
                 else if (myCol->isPlanoCol(mousePos,pauseMenuElements[pauseExit].pos,0,0,1.8,1.0)) pauseMenuElements[pauseExit].clicked = true;
+            }
+            else if (gameState == gameOver) {
+                if (myCol->isPlanoCol(mousePos, gameOverButtons[goPlayAgain].pos, 0,0,1.8,1.0)) {
+                    gameOverButtons[goPlayAgain].clicked = true;
+                }
+                else if (myCol->isPlanoCol(mousePos, gameOverButtons[goMainMenu].pos, 0,0,1.8,1.0)) {
+                    gameOverButtons[goMainMenu].clicked = true;
+                }
             }
             if (gameState == landing) gameState = mainMenu;
              mouseMapping(LOWORD(lParam), HIWORD(lParam));
