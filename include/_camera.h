@@ -16,6 +16,7 @@ class _camera
         float step;    // camera speed
         vec2 rotAngle; // rotation of the camera [left/right/up/down]
         float distance;// eye to source
+        float fov;
 
         enum{FORWARD,BACKWARD,LEFT,RIGHT};
 

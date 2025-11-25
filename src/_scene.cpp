@@ -120,6 +120,8 @@ void _Scene::initGL()
     textLower->textInit("images/fonts/lower.png",9,3);
     textNum->textInit("images/fonts/numEtc.png",9,3);
 
+    plyrScore->resetScore();
+
     //bool res = obj->loadOBJ("models/cube.obj",vertices,uvs,normals);
 
 
@@ -142,7 +144,8 @@ void _Scene::drawScene()
        if (!paused) {
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            gluPerspective(45 * (plyr->speed + 1),(float)width/(float)height,0.1,1000.0);
+            myCam->fov = 45 * (plyr->speed + 1);
+            gluPerspective(myCam->fov,(float)width/(float)height,0.1,1000.0);
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
@@ -198,8 +201,6 @@ void _Scene::drawScene()
             glPushMatrix();
 
                 daySky->drawSkyBox();
-                glPopMatrix();
-                glPushMatrix();
                 glRotatef(90.0,0,0,1.0);
                 glRotatef(90.0,0,1,0);
                 glTranslatef(0,0,10);
@@ -208,6 +209,14 @@ void _Scene::drawScene()
                 glScalef(1.0,200.0,1.0);
                 glTranslatef(0,0,-0.05);
                 ground->drawParallax(200.0,1.0);
+            glPopMatrix();
+            plyrScore->updateScore(plyr->speed);
+            glPushMatrix();
+                glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
+                glTranslatef(-1.8,1.8,-3.0 * plyr->speed);
+                glRotatef(180,1,0,0);
+                glRotatef(180,0,0,1);
+                textNum->drawText(plyrScore->strScore,0.4);
             glPopMatrix();
         }
        else {
@@ -243,7 +252,12 @@ void _Scene::drawScene()
                     plyr->scale = 1.0;
                     menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
             }
+            //glMatrixMode(GL_PROJECTION);
+            //glLoadIdentity();
+            //glMatrixMode(GL_MODELVIEW);
+        //glLoadIdentity();
         }
+        //glDepthFunc(GL_NEVER);
         break;
       case gameOver:
         // 1. Draw the world frozen (same camera as inGame but no updateInGame)

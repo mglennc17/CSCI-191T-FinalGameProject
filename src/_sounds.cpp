@@ -19,8 +19,8 @@ void _sounds::playMusic(char* filename)
 
 void _sounds::playSounds(char* filename)
 {
-   if(!eng->isCurrentlyPlaying(filename))
-        eng->play2D(filename,false,false);
+   //if(!eng->isCurrentlyPlaying(filename))
+    eng->play2D(filename,false,false);
 }
 
 void _sounds::pauseSound(char* filename)

@@ -25,16 +25,18 @@ void _textDisplay::textInit(char* fileName,int width,int height)
 
 void _textDisplay::drawText(char* str, float fontSize)
 {
+    //glDepthFunc(GL_ALWAYS);
     int idx;
     int x;
     int y;
-    glClearColor(1.0,1.0,1.0,1.0);
+    //glClearColor(1.0,1.0,1.0,1.0);
     font->bindTexture();
     glPushMatrix();
-    glTranslatef(-0.5,1.0,0);
+    //glTranslatef(-0.5,1.0,0);
     glScalef(1.0 * fontSize,1.0 * fontSize,1.0);
     for (int i = 0; i < strlen(str); i++) {
         if (isalpha(str[i])) idx = str[i] - 'A';
+        else if (isdigit(str[i])) idx = str[i] - '0';
         else idx = 26;      //space
 
         y = (idx / w);
@@ -62,4 +64,5 @@ void _textDisplay::drawText(char* str, float fontSize)
         glPopMatrix();
     }
     glPopMatrix();
+    //glDepthFunc(GL_LEQUAL);
 }

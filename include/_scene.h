@@ -21,6 +21,7 @@
 #include <_objLoader.h>
 #include <_playerHealth.h>
 #include <_textDisplay.h>
+#include <_score.h>
 
 class _Scene
 {
@@ -47,6 +48,7 @@ class _Scene
         _textDisplay *textUpper = new _textDisplay();
         _textDisplay *textLower = new _textDisplay();
         _textDisplay *textNum = new _textDisplay();
+        _score *plyrScore = new _score();
         _obstacle obstcls[20];
 
         _skyBox *carShop = new _skyBox();
