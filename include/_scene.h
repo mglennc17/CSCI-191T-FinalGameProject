@@ -22,6 +22,7 @@
 #include <_playerHealth.h>
 #include <_textDisplay.h>
 #include <_score.h>
+#include <_collectables.h>
 
 class _Scene
 {
@@ -106,14 +107,51 @@ class _Scene
         uniform_int_distribution<mt19937::result_type> rand6;
         uniform_int_distribution<mt19937::result_type> rand100;
 
+        // 1:7 ratio for coin and dollar spawns
+        uniform_int_distribution<mt19937::result_type> rand8;
+
         vector<vec3> vertices;
-    vector<vec2> uvs;
-    vector<vec3> normals;
+        vector<vec2> uvs;
+        vector<vec3> normals;
 
         float carRot = 0;
 
         void updateInGame();
         void checkPlayerObstacleCollisions();
+
+        // collectibles
+        // 50 coins and 25 dollars
+        static const int MAX_COINS = 50;
+        static const int MAX_DOLLARS  = 25;
+
+        _collectables coins[MAX_COINS];
+        _collectables dollars[MAX_DOLLARS];
+
+        // keeping individual scores and total score
+        int coinScore;
+        int dollarScore;
+        int totalScore;
+
+        float collectableSpawnTimer;
+
+        // +1 .. +4 floating as collectibles are hit
+        float pickupTextTimer;
+        int lastPickupValue;
+
+        vec3 lastPickupPos;
+
+        void objCollection();
+
+        void updateCollectibles(float dt);
+        void spawnCollectibles();
+        void checkCollectibleCollisions();
+        bool isSafeCollectibleSpawn(float lanx, float zStart);
+
+
+
+
+
+
 
     protected:
 

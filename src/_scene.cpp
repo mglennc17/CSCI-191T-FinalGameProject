@@ -1,4 +1,6 @@
 #include "_scene.h"
+#include <cmath>
+#include <cstdio>
 
 _Scene::_Scene()
 {
@@ -8,6 +10,25 @@ _Scene::_Scene()
     rand6 = uniform_int_distribution<mt19937::result_type>(1,6);
     rand2 = uniform_int_distribution<mt19937::result_type>(1,2);
     animationTimer->startTime = clock();
+
+    // init collectibles
+    for(int i = 0; i < MAX_COINS; ++i){
+        coins[i].active = false;
+        coins[i].size = 0.3;
+    }
+    for(int i = 0; i < MAX_DOLLARS; ++i){
+        dollars[i].active = false;
+        dollars[i].size = 0.3;
+    }
+
+    coinScore = 0;
+    dollarScore = 0;
+    totalScore = 0;
+
+    collectableSpawnTimer = 0.0;
+    pickupTextTimer = 0.0;
+    lastPickupValue = 0;
+
 }
 
 _Scene::~_Scene()
@@ -127,6 +148,166 @@ void _Scene::initGL()
 
 }
 
+
+
+void _Scene::spawnCollectibles()
+{
+    if(coinScore >= MAX_COINS && dollarScore >= MAX_DOLLARS)
+        return;
+
+    //adding a 1:7 ratio (dollars are rare). rolls 1 through 8. 1 = dollar and 2-8 = coins
+    int roll = (int)rand8(rng);
+    bool spawnDollar = (roll == 1);
+
+    if(spawnDollar && dollarScore < MAX_DOLLARS){
+        //spawn in active dollar (dollar that haven't got collected)
+        for(int i = 0; i < MAX_DOLLARS; ++i){
+            if(!dollars[i].active){
+                float laneX = 1.05 - (rand6(rng) * 0.30);
+                float zStart = 20.0 + (float)(rand6(rng) * 5.0);
+
+                dollars[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/dollar.png");
+
+                break;
+            }
+        }
+    }else{
+        if(coinScore >=MAX_COINS)return;
+
+        for(int i = 0; i < MAX_COINS; ++i){
+            if(!coins[i].active){
+                float lanX = 1.05 - (rand6(rng) * 0.30);
+                float zStart = 20.0 + (float)(rand6(rng) * 5.0);
+
+                coins[i].init(lanX, 0.2, zStart, 0.08, (char*)"images/collectibles/coin.png");
+                break;
+            }
+        }
+    }
+}
+
+void _Scene::checkCollectibleCollisions()
+{
+     if(gameState != inGame) return;
+
+    float px = plyr->pos.x;
+    float pz = plyr->pos.z;
+    float pr = 0.3;   // player radius
+
+    // coins
+    for(int i = 0; i < MAX_COINS; ++i){
+        if(!coins[i].active) continue;
+
+        float dx = px - coins[i].x;
+        float dz = pz - coins[i].z;
+        float dist2 = dx*dx + dz*dz;
+        float rSum = pr + coins[i].size;
+
+        if(dist2 <= rSum * rSum){
+            coins[i].deactivate();
+            coinScore++;
+            totalScore += 1;
+
+            lastPickupValue = 1;
+            pickupTextTimer = 0.8;  // shows points float after collectign coin
+
+            lastPickupPos.x = coins[i].x;
+            lastPickupPos.y = coins[i].y + 0.3;
+            lastPickupPos.z = coins[i].z;
+
+            // to add a sound do it here
+           // menuMsc->playSounds("link here ");
+        }
+    }
+
+    //dollars
+    for(int i = 0; i < MAX_DOLLARS; ++i){
+        if(!dollars[i].active) continue;
+
+        float dx = pz - dollars[i].x;
+        float dz = pz - dollars[i].z;
+        float dist2 = dx*dx + dz*dz;
+        float rSum = pr + dollars[i].size;
+
+        if(dist2 <= rSum * rSum){
+            dollars[i].deactivate();
+            dollarScore++;
+            totalScore += 4;
+
+            lastPickupValue = 4;
+            pickupTextTimer = 0.8;
+
+            lastPickupPos.x = dollars[i].x;
+            lastPickupPos.y = dollars[i].y + 0.3;
+            lastPickupPos.z = dollars[i].z;
+
+            //sound
+            //menuMsc->playSounds("link here");
+        }
+    }
+
+}
+
+void _Scene::updateCollectibles(float dt)
+{
+    //adding spinning animation to all collectibles
+    for(int i = 0; i < MAX_COINS; ++i){
+        if(!coins[i].active) continue;
+        coins[i].rotZ += coins[i].spinSpeed * dt;
+        if(coins[i].rotZ > 360.0) coins[i].rotZ -= 360.0;
+    }
+
+    for(int i = 0; i < MAX_DOLLARS; ++i){
+        if(!dollars[i].active) continue;
+        dollars[i].rotZ += dollars[i].spinSpeed * dt;
+        if(dollars[i].rotZ > 360.0) dollars[i].rotZ -= 360.0;
+    }
+
+
+    //spawning timer
+    collectableSpawnTimer += dt;
+
+    // spawn something ever 5 seconds
+    if(collectableSpawnTimer >= 5.0){
+        collectableSpawnTimer = 0.0;
+
+        if(rand2(rng) == 1){
+            spawnCollectibles();
+        }
+    }
+
+    // move active collectibles with the road
+    if(animationTimer->getTicks() >= 10){
+        for(int i = 0; i < MAX_COINS; ++i){
+            if(!coins[i].active) continue;
+            coins[i].z -= (0.1 * plyr->speed);
+            if(coins[i].z <= -20.0){
+                coins[i].active = false;
+            }
+        }
+        for(int i = 0; i < MAX_DOLLARS; ++i){
+            if(!dollars[i].active)continue;
+            dollars[i].z -= (0.1 * plyr->speed);
+            if(dollars[i].z <= -20.0){
+                dollars[i].active = false;
+            }
+        }
+    }
+}
+
+bool _Scene::isSafeCollectibleSpawn(float lanx, float zStart)
+{
+    const float safeZ = 5.0;  // the minimum space allowed for collectibles to spawn near a car
+    for(int i = 0; i < 10; ++i){  // 10 is the amount of cars we have
+        float dz = fabs(zStart - obstcls[i].pos.z);
+
+        if(dz < safeZ){
+            return false;
+        }
+    }
+    return true;
+}
+
 void _Scene::drawScene()
 {
 
@@ -199,7 +380,6 @@ void _Scene::drawScene()
                 glPopMatrix();
             }
             glPushMatrix();
-
                 daySky->drawSkyBox();
                 glRotatef(90.0,0,0,1.0);
                 glRotatef(90.0,0,1,0);
@@ -210,14 +390,51 @@ void _Scene::drawScene()
                 glTranslatef(0,0,-0.05);
                 ground->drawParallax(200.0,1.0);
             glPopMatrix();
-            plyrScore->updateScore(plyr->speed);
+
+            //drawing coin and dollar
+            for(int i = 0; i < MAX_COINS; ++i)
+                coins[i].draw();
+            for(int i = 0; i < MAX_DOLLARS; ++i)
+                dollars[i].draw();
+            //placing score top left
+            char scoreStr[16];
+            sprintf(scoreStr, "%d", totalScore);
+            glColor3f(1.0,1.0,1.0);
+
+            //plyrScore->updateScore(plyr->speed);
             glPushMatrix();
                 glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
                 glTranslatef(-1.8,1.8,-3.0 * plyr->speed);
                 glRotatef(180,1,0,0);
                 glRotatef(180,0,0,1);
-                textNum->drawText(plyrScore->strScore,0.4);
+                textNum->drawText(scoreStr,0.4);
             glPopMatrix();
+
+            // showing the floating +1 and +4
+            if(pickupTextTimer > 0.0){
+                char popupStr[8];
+                if(lastPickupValue == 4) strcpy(popupStr, "+4");
+                else                     strcpy(popupStr, "+1");
+
+                float t = pickupTextTimer / 0.8;
+                float lift = (1.0 - t) * 0.5;
+
+                glColor3f(1.0, 1.0, 1.0);
+
+                glPushMatrix();
+                   /* glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
+                    glTranslatef(-1.8,1.5,-3.0 * plyr->speed);
+                    glRotatef(180,1,0,0);
+                    glRotatef(180,0,0,1);
+                    textNum->drawText(popupStr,0.3); */
+                    glTranslatef(lastPickupPos.x, lastPickupPos.y + lift, lastPickupPos.z);
+
+                    glRotatef(180,1,0,0);
+                    glRotatef(180,0,0,1);
+                    textNum->drawText(popupStr, 0.3);
+
+                glPopMatrix();
+            }
         }
        else {
             myCam->camReset();
@@ -525,6 +742,14 @@ void _Scene::updateInGame()
     const float dt = 0.016;
     playerHealth.update(dt);
     checkPlayerObstacleCollisions();
+
+    updateCollectibles(dt);
+    checkCollectibleCollisions();
+
+    if(pickupTextTimer > 0.0){
+        pickupTextTimer -= dt;
+        if(pickupTextTimer < 0.0) pickupTextTimer = 0.0;
+    }
 }
 
 void _Scene::checkPlayerObstacleCollisions()
@@ -582,6 +807,7 @@ void _Scene::checkPlayerObstacleCollisions()
         }
     }
 }
+
 
 int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
