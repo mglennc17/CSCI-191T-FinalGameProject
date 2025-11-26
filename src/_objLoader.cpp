@@ -125,9 +125,11 @@ bool _objLoader::loadOBJ(const char* path, const char* mtl)
 void _objLoader::drawOBJ()
 {
     glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT);
+    glColorMaterial(GL_FRONT_AND_BACK,GL_DIFFUSE);
     glColorMaterial(GL_FRONT_AND_BACK,GL_SPECULAR);
 
-    glColor3f(0.1,0.2,0.1);
+    glColor3f(0.8,1.0,0.8);
     //glDisable(GL_TEXTURE_2D);
     int matIndex = 0;
 
@@ -136,7 +138,7 @@ void _objLoader::drawOBJ()
             if (i == groupIndex[matIndex]) {
                 GLfloat specular[4] = { mats[matIndex].Ks.x,mats[matIndex].Ks.y,mats[matIndex].Ks.z,1.0 };
                 GLfloat diffuse[4] = { mats[matIndex].Kd.x,mats[matIndex].Kd.y,mats[matIndex].Kd.z,1.0 };
-                GLfloat ambient[4] = { mats[matIndex].Ka.x,mats[matIndex].Ka.y,mats[matIndex].Ka.z,1.0 };
+                GLfloat ambient[4] = { mats[matIndex].Ka.x/5,mats[matIndex].Ka.y/5,mats[matIndex].Ka.z/5,1.0 };
 
                 glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,specular);
                 glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,ambient);
