@@ -135,11 +135,8 @@ void _objLoader::drawOBJ()
     glRotated(rot.y,0,1,0);
     glRotated(rot.z,0,0,1);
 
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT);
-    glColorMaterial(GL_FRONT_AND_BACK,GL_DIFFUSE);
-    glColorMaterial(GL_FRONT_AND_BACK,GL_SPECULAR);
-    //glClear(GL_TEXTURE_2D);
+    glDisable(GL_COLOR_MATERIAL);
+    glClear(GL_TEXTURE_2D);
     if (textures.size() <= 0) glDisable(GL_TEXTURE_2D);
 
     glColor3f(0.8,1.0,0.8);
@@ -171,10 +168,9 @@ void _objLoader::drawOBJ()
         glVertex3fv(v);
     }
     glEnd();
-    glDisable(GL_COLOR_MATERIAL);
+
+    glEnable(GL_COLOR_MATERIAL);
     glPopMatrix();
-    //glClear(GL_COLOR_MATERIAL);
-    //glClear(GL_TEXTURE_2D);
     glEnable(GL_TEXTURE_2D);
 
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);

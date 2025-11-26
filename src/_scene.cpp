@@ -89,12 +89,12 @@ void _Scene::initGL()
     obstacleMdl->actionTrigger = obstacleMdl->STAND;
 
     daySky->skyBoxInit();
-    daySky->tex[0] = daySky->textures->loadTexture("images/skybox/day/back.png");
-    daySky->tex[1] = daySky->textures->loadTexture("images/skybox/day/front.png");
-    daySky->tex[2] = daySky->textures->loadTexture("images/skybox/day/top.png");
-    daySky->tex[3] = daySky->textures->loadTexture("images/skybox/day/bottom.png");
-    daySky->tex[4] = daySky->textures->loadTexture("images/skybox/day/right.png");
-    daySky->tex[5] = daySky->textures->loadTexture("images/skybox/day/left.png");
+    daySky->tex[0] = daySky->textures->loadTexture("images/skybox/dusk/back.png");
+    daySky->tex[1] = daySky->textures->loadTexture("images/skybox/dusk/front.png");
+    daySky->tex[2] = daySky->textures->loadTexture("images/skybox/dusk/top.png");
+    daySky->tex[3] = daySky->textures->loadTexture("images/skybox/dusk/bottom.png");
+    daySky->tex[4] = daySky->textures->loadTexture("images/skybox/dusk/right.png");
+    daySky->tex[5] = daySky->textures->loadTexture("images/skybox/dusk/left.png");
 
     landingPage->parallaxInit("images/menu/landingPage.png");
     menuBackground.parallaxInit("images/menu/menuBackground.png");
@@ -145,6 +145,12 @@ void _Scene::initGL()
 
     obj->loadOBJ("models/car/nissan.obj","models/car/nissan.mtl");
 
+    myTexture->loadTexture("images/skybox.png");
+    tex = myTexture->textID;
+    //sky->loadOBJ("models/sky/testSky.obj","models/sky/testSky.mtl");
+    //vector<char *> Texs;
+    //Texs.push_back("models/sky/sky_water_landscape.jpg");
+    //sky->textureOBJ(Texs);
     //bool res = obj->loadOBJ("models/cube.obj",vertices,uvs,normals);
 
 
@@ -325,6 +331,7 @@ void _Scene::drawScene()
    switch (gameState) {
    case inGame:
        if (!paused) {
+            glColor3f(1,1,1);
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             myCam->fov = 45 * (plyr->speed + 1);
@@ -365,6 +372,12 @@ void _Scene::drawScene()
                 }
                 plyr->drawPlayer();
             glPopMatrix();
+            //glPushMatrix();
+            //    myTexture->bindTexture();
+            //    glRotatef(270,1,0,0);
+            //    //glTranslatef(0,-70,0);
+            //    glutSolidSphere(1,20000,20000);
+            //glPopMatrix();
             // reset color so we don't tint other things
             glColor3f(1.0, 1.0, 1.0);
             if (animationTimer->getTicks()>= 10) {
@@ -514,11 +527,13 @@ void _Scene::drawScene()
             glRotatef(90.0,0,0,1.0);
             glRotatef(90.0,0,1,0);
             glTranslatef(0,0,10);
+            glColor3f(0.6,0.6,0.6);
             road->drawParallax(200.0,2.0);
             glTranslatef(1,-1,0);
             glScalef(1.0,200.0,1.0);
             glTranslatef(0,0,-0.05);
             ground->drawParallax(200.0,1.0);
+            glColor3f(1.0,1.0,1.0);
         glPopMatrix();
 
         // 2. Draw dark overlay in screen space
@@ -668,7 +683,7 @@ void _Scene::drawScene()
             if (animationTimer->getTicks() >= 10) { plyr->rot.z += 0.2; animationTimer->reset(); }
         glPopMatrix();
         glPushMatrix();
-            printf("%f\t%f\t%f\n",mousePos.x,mousePos.y,msZ);
+            //printf("%f\t%f\t%f\n",mousePos.x,mousePos.y,msZ);
             mainMenuElements[newGame].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0));
             mainMenuElements[help].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[help].pos,0,0,2,1.0));
             mainMenuElements[exit].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[exit].pos,0,0,1.8,1.0));

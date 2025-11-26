@@ -51,6 +51,9 @@ class _Scene
         _textDisplay *textNum = new _textDisplay();
         _score *plyrScore = new _score();
         _obstacle obstcls[20];
+        GLuint tex;
+
+        _objLoader *sky = new _objLoader();
 
         _skyBox *carShop = new _skyBox();
         _skyBox *daySky = new _skyBox();
