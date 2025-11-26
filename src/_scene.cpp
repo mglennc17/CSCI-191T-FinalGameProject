@@ -143,6 +143,8 @@ void _Scene::initGL()
 
     plyrScore->resetScore();
 
+    obj->loadOBJ("models/car/nissan.obj","models/car/nissan.mtl");
+
     //bool res = obj->loadOBJ("models/cube.obj",vertices,uvs,normals);
 
 
@@ -652,7 +654,17 @@ void _Scene::drawScene()
             menuBackground.drawParallax(width,height);
         glPopMatrix();
         glPushMatrix();
-            plyr->drawPlayer();
+            glPushMatrix();
+
+                glTranslatef(plyr->pos.x,0.7,plyr->pos.z);
+                //glRotatef(90,1,0,0);
+                //glRotatef(90,0,1,0);
+                //glRotatef(90,0,0,1);
+                glRotatef(30,1,0,0);
+                glRotatef(plyr->rot.z,0,1,0);
+                obj->drawOBJ();
+            glPopMatrix();
+            //plyr->drawPlayer();
             if (animationTimer->getTicks() >= 10) { plyr->rot.z += 0.2; animationTimer->reset(); }
         glPopMatrix();
         glPushMatrix();
