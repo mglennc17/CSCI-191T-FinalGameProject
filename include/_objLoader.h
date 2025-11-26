@@ -24,6 +24,9 @@ class _objLoader
         _objLoader();
         virtual ~_objLoader();
 
+        vec3 pos, rot;
+        float scale;
+
         vector<vector<vec3>> vertex_groups;
         vector<vector<vec2>> uv_groups;
         vector<vector<vec3>> normal_groups;
@@ -34,10 +37,13 @@ class _objLoader
         vector<vec3> normals;
         vector<int> groupIndex;
 
+        vector<GLuint> textures;
+
         _textureLoader *myTex = new _textureLoader();
         GLuint tex_id;
         vec3_t v;
 
+        void textureOBJ(vector<char*>);
         bool loadOBJ(const char *, const char *);
         void drawOBJ();
 

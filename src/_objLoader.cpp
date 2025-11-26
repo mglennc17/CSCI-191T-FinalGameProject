@@ -12,6 +12,10 @@ _objLoader::~_objLoader()
 
 bool _objLoader::loadOBJ(const char* path, const char* mtl)
 {
+    pos.x = pos.y = pos.z = 0;
+    rot.x = rot.y = rot.z = 0;
+    scale = 1.0;
+
     vector< unsigned int > vertexIndices, uvIndices, normalIndices;
     vector< vec3 > temp_vertices;
     vector< vec2 > temp_uvs;
@@ -124,42 +128,70 @@ bool _objLoader::loadOBJ(const char* path, const char* mtl)
 
 void _objLoader::drawOBJ()
 {
+    glPushMatrix();
+    glScalef(scale,scale,scale);
+    glTranslatef(pos.x,pos.y,pos.z);
+    glRotated(rot.x,1,0,0);
+    glRotated(rot.y,0,1,0);
+    glRotated(rot.z,0,0,1);
+
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT);
     glColorMaterial(GL_FRONT_AND_BACK,GL_DIFFUSE);
     glColorMaterial(GL_FRONT_AND_BACK,GL_SPECULAR);
+    //glClear(GL_TEXTURE_2D);
+    if (textures.size() <= 0) glDisable(GL_TEXTURE_2D);
 
     glColor3f(0.8,1.0,0.8);
-    //glDisable(GL_TEXTURE_2D);
     int matIndex = 0;
 
-    glBegin(GL_TRIANGLES);
-        for (int i = 0; i < vertices.size(); i++) {
-            if (i == groupIndex[matIndex]) {
-                GLfloat specular[4] = { mats[matIndex].Ks.x,mats[matIndex].Ks.y,mats[matIndex].Ks.z,1.0 };
-                GLfloat diffuse[4] = { mats[matIndex].Kd.x,mats[matIndex].Kd.y,mats[matIndex].Kd.z,1.0 };
-                GLfloat ambient[4] = { mats[matIndex].Ka.x/5,mats[matIndex].Ka.y/5,mats[matIndex].Ka.z/5,1.0 };
+    for (int i = 0; i < vertices.size(); i++) {
+        if (matIndex < textures.size()) GL_TEXTURE_2D,textures[matIndex];
+        if (i == groupIndex[matIndex]) {
+            glEnd();
 
-                glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,specular);
-                glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,ambient);
-                glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,diffuse);
+            GLfloat specular[4] = { mats[matIndex].Ks.x,mats[matIndex].Ks.y,mats[matIndex].Ks.z,1.0 };
+            GLfloat diffuse[4] = { mats[matIndex].Kd.x,mats[matIndex].Kd.y,mats[matIndex].Kd.z,1.0 };
+            GLfloat ambient[4] = { mats[matIndex].Ka.x/5,mats[matIndex].Ka.y/5,mats[matIndex].Ka.z/5,1.0 };
 
-                matIndex++;
-            }
-            glTexCoord2f(uvs[i].x,uvs[i].y);
-            glNormal3f(normals[i].x,normals[i].y,normals[i].z);
-            v[0] = vertices[i].x;
-            v[1] = vertices[i].y;
-            v[2] = vertices[i].z;
-            glVertex3fv(v);
+            glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,specular);
+            glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,ambient);
+            glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,diffuse);
+
+            if (matIndex < textures.size()) glBindTexture(GL_TEXTURE_2D,textures[matIndex]);
+
+            matIndex++;
+            glBegin(GL_TRIANGLES);
         }
+        glTexCoord2f(uvs[i].x,uvs[i].y);
+        glNormal3f(normals[i].x,normals[i].y,normals[i].z);
+        v[0] = vertices[i].x;
+        v[1] = vertices[i].y;
+        v[2] = vertices[i].z;
+        glVertex3fv(v);
+    }
     glEnd();
     glDisable(GL_COLOR_MATERIAL);
+    glPopMatrix();
+    //glClear(GL_COLOR_MATERIAL);
+    //glClear(GL_TEXTURE_2D);
     glEnable(GL_TEXTURE_2D);
-    glClear(GL_COLOR_MATERIAL);
 
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS,high_shininess);
+
+    //glFlush();
 }
+
+void _objLoader::textureOBJ(vector<char*> files)
+{
+    for (int i = 0; i < files.size(); i++) {
+        //_textureLoader *tempTex = new _textureLoader();
+        myTex->loadTexture(files[i]);
+        textures.push_back(myTex->textID);
+        //textures.push_back(tempTex);
+    }
+}
+
