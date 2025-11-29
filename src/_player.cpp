@@ -68,7 +68,6 @@ void _player::drawPlayer()
             if (pos.x < -0.9) pos.x = -0.9;
 
             glTranslatef(0,0,5);
-            pos.x += 0.2 * speed * rot.y / ( 270 );
             rot.z *= 0.8;
             rot.z += 5 * (rot.y - prevRot);
             if (rot.z > 7) rot.z = 7;
@@ -80,7 +79,11 @@ void _player::drawPlayer()
 
     diff = nw - wheelTmr;
 
-    if(diff.count() * (16 * speed) > 16 && !crashed) { frameCount++; wheelTmr = chrono::system_clock::now(); }
+    if(diff.count() * (16 * speed) > 16 && !crashed) {
+        frameCount++; wheelTmr = chrono::system_clock::now();
+        pos.x += 0.2 * rot.y / ( 270 );
+    }
+
 
 
     glTranslatef(pos.x,pos.y,pos.z);
