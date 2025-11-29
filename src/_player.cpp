@@ -2,14 +2,17 @@
 
 _player::_player()
 {
+    menuRot.x = 30; menuRot.y = 0; menuRot.z = 0;
+    menuPos.x = 0; menuPos.y = 0.7; menuPos.z = -7.0;
     myTime->reset();
-    pos.x = pos.y = pos.z = 0;
-    rot.x = rot.y = rot.z = 0;
+    pos = menuPos;
+    rot = menuRot;
     scale = 1.0;
     speed = 0;
     maxSpeed = 1.0;
     accelerating = false;
     accel = 0.1;
+
     //ctor
 }
 
@@ -25,17 +28,17 @@ void _player::drawPlayer()
     if(myTime->getTicks() >= 5) {
         //glTranslatef(mdl->pos.x,mdl->pos.y,mdl->pos.z);
 
-        if (movement == left && pos.x >= -0.9) {
-            if (rot.z > 270) rot.z -= 0.1 * speed;
-            if (rot.z >= 260) rot.z -= 0.1 * speed;
+        if (movement == right && pos.x >= -0.9) {
+            if (rot.y > 0) rot.y -= 0.1 * speed;
+            if (rot.y >= -30) rot.y -= 0.1 * speed;
         }
-        else if (movement == right && pos.x <= 0.9) {
-            if (rot.z < 270) rot.z += 0.1 * speed;
-            if (rot.z <= 280) rot.z += 0.1 * speed;
+        else if (movement == left && pos.x <= 0.9) {
+            if (rot.y < 0) rot.y += 0.1 * speed;
+            if (rot.y <= 30) rot.y += 0.1 * speed;
         }
         else if (movement != menu) {
-            if (rot.z > 270) rot.z -= 0.2;
-            if (rot.z < 270) rot.z += 0.2;
+            if (rot.y > 0) rot.y -= 0.2;
+            if (rot.y < 0) rot.y += 0.2;
             if (pos.x > 0.9) pos.x = 0.9;
             if (pos.x < -0.9) pos.x = -0.9;
         }
@@ -59,23 +62,20 @@ void _player::drawPlayer()
 
         if (pos.x > 0.9) pos.x = 0.9;
         if (pos.x < -0.9) pos.x = -0.9;
-        glTranslatef(pos.x,pos.y,pos.z);
-        glRotatef(90,1,0,0);
-        glRotatef(180,0,1,0);
-        glRotatef(90,0,0,1);
 
         if (movement != menu) {
-            pos.x += 0.1 * speed * ( rot.z - 270 ) / ( 270 );
+            glTranslatef(0,0,5);
+            pos.x += 0.1 * speed * rot.y / ( 270 );
             glTranslatef(0,0,-5);
         }
+        glTranslatef(pos.x,pos.y,pos.z);
 
         glRotatef(rot.x,1.0,0,0);
         glRotatef(rot.y,0,1.0,0);
         glRotatef(rot.z,0,0,1.0);
 
-        if (movement != menu) glTranslatef(0,0,5);
-
         glScalef(scale,scale,scale);
+
         if(myTime->getTicks() >= 5) {
             myTime->reset();
             mdl->Actions();
@@ -83,5 +83,10 @@ void _player::drawPlayer()
         }
         mdl->Draw();
         wpn->Draw();
+        body->drawOBJ();
+        if (movement == left) whlsTurn->drawOBJ();
+        else if (movement == right) {glScalef(-1,1,1); whlsTurn->drawOBJ();}
+        else whls->drawOBJ();
+
     glPopMatrix();
 }

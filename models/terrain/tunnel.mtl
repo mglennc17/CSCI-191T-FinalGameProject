@@ -1,0 +1,64 @@
+# Blender 4.5.4 LTS MTL File: 'uploads_files_6427720_car+tunnel.blend'
+# www.blender.org
+
+newmtl Stone_gehsteig
+Ka 1.000000 1.000000 1.000000
+Ks 0.200000 0.200000 0.200000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd -s -4 -4 -4 stone.jpg
+map_Ns -s -4 -4 -4 C:/stone-9_smooth.jpg
+
+newmtl Tunnel_light
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Tunnelmaterial
+Ka 0.724409 0.724409 0.724409
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 3
+map_Kd C:/albedo.png
+map_Ns C:/roughness.png
+map_Bump -bm 1.000000 C:/normal.png
+
+newmtl gehsteig
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd sidewalk.jpg
+map_Ns C:/Dirty_Sidewalk_Tiles_ugxjcdpn_8K_Roughness.jpg
+
+newmtl orange_light
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl straße.001
+Ns 673.145630
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd road.jpg
+map_d C:/Wet with puddles_AO.jpg
+map_Bump -bm 1.000000 C:/Wet with puddles_Normal.jpg

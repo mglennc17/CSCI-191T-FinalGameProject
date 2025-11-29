@@ -1,0 +1,74 @@
+# Material file for nissanTest2.obj
+
+newmtl Material.001
+	Ns 27
+	d 1
+	illum 2
+	Kd 0.098504 0.098504 0.098504
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+
+newmtl Material.002
+	Ns 27
+	d 1
+	illum 2
+	Kd 0.021979 0.021979 0.021979
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+
+newmtl Material.003
+	Ns 597
+	d 1
+	illum 2
+	Kd 0.069292 0.083579 0.102472
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+
+newmtl Material.004
+	Ns 640
+	d 1
+	illum 2
+	Kd 1.0 0.169535 0.038209
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+
+newmtl Material.005
+	Ns 640
+	d 1
+	illum 2
+	Kd 0.998961 1.0 0.772659
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+
+newmtl Material.006
+	Ns 640
+	d 1
+	illum 2
+	Kd 1.0 0.0 0.006054
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+
+newmtl Material.007
+	Ns 0
+	d 1
+	illum 2
+	Kd 0.011088 0.011088 0.011088
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+
+newmtl Material.008
+	Ns 250
+	d 1
+	illum 2
+	Kd 0.281009 0.281009 0.281009
+	Ks 0.5 0.5 0.5
+	Ka 0.453901 0.453901 0.453901
+
+newmtl Material.009
+	Ns 393
+	d 1
+	illum 2
+	Kd 0.8 0.8 0.8
+	Ks 0.5 0.5 0.5
+	Ka 1.0 1.0 1.0
+

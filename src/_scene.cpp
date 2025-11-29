@@ -124,12 +124,10 @@ void _Scene::initGL()
     ground->xMax = 50;
     ground->yMax = 50;
 
-    plyr->mdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");//,"models/car/Tex.png");
-    plyr->mdl->actionTrigger = plyr->mdl->STAND;
-    plyr->pos.x = 0;
-    plyr->pos.y = 1;
-    plyr->pos.z = -7;
-    plyr->scale = 1.0;
+    //plyr->mdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");//,"models/car/Tex.png");
+    //plyr->mdl->actionTrigger = plyr->mdl->STAND;
+    plyr->rot = plyr->menuRot;
+    plyr->pos = plyr->menuPos;
 
     resetObstacles();
     myCam->camInit();
@@ -144,9 +142,12 @@ void _Scene::initGL()
     plyrScore->resetScore();
 
     obj->loadOBJ("models/car/nissan.obj","models/car/nissan.mtl");
+    plyr->body->loadOBJ("models/car/nissanTest.obj","models/car/nissanTest.mtl");
+    plyr->whls->loadOBJ("models/car/nissanWheels.obj","models/car/nissanWheels.mtl");
+    plyr->whlsTurn->loadOBJ("models/car/nissanWheels2.obj","models/car/nissanWheels2.mtl");
 
-    myTexture->loadTexture("images/skybox.png");
-    tex = myTexture->textID;
+    //myTexture->loadTexture("images/skybox.png");
+    //tex = myTexture->textID;
     //sky->loadOBJ("models/sky/testSky.obj","models/sky/testSky.mtl");
     //vector<char *> Texs;
     //Texs.push_back("models/sky/sky_water_landscape.jpg");
@@ -331,7 +332,6 @@ void _Scene::drawScene()
    switch (gameState) {
    case inGame:
        if (!paused) {
-            glColor3f(1,1,1);
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             myCam->fov = 45 * (plyr->speed + 1);
@@ -346,7 +346,6 @@ void _Scene::drawScene()
             myCam->rotAngle.y = 0;
             myCam->distance = 4.0 / (1 +  2 * plyr->speed);
             myCam->rotateXY();
-
 
             // screen shake when recently hit
             if (playerHealth.isFlashing()) {
@@ -370,6 +369,7 @@ void _Scene::drawScene()
                 } else {
                     glColor3f(1.0, 1.0, 1.0);   // normal color
                 }
+                plyr->rot.x = 0;
                 plyr->drawPlayer();
             glPopMatrix();
             //glPushMatrix();
@@ -379,7 +379,7 @@ void _Scene::drawScene()
             //    glutSolidSphere(1,20000,20000);
             //glPopMatrix();
             // reset color so we don't tint other things
-            glColor3f(1.0, 1.0, 1.0);
+            glColor3f(0.6, 0.6, 0.64);
             if (animationTimer->getTicks()>= 10) {
                 for (int i = 0; i < 20; i++) {
                     obstcls[i].pos.z -= (0.1 * plyr->speed);
@@ -394,6 +394,7 @@ void _Scene::drawScene()
                 obstcls[i].drawObstacle(obstacleMdl);
                 glPopMatrix();
             }
+
             glPushMatrix();
                 daySky->drawSkyBox();
                 glRotatef(90.0,0,0,1.0);
@@ -412,17 +413,19 @@ void _Scene::drawScene()
             for(int i = 0; i < MAX_DOLLARS; ++i)
                 dollars[i].draw();
             //placing score top left
-            char scoreStr[16];
-            sprintf(scoreStr, "%d", totalScore);
+            //char scoreStr[16];
+            //sprintf(scoreStr, "%d", totalScore);
             glColor3f(1.0,1.0,1.0);
 
             //plyrScore->updateScore(plyr->speed);
+            plyrScore->playerScore = totalScore;
+            plyrScore->updateScore(1);
             glPushMatrix();
                 glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
                 glTranslatef(-1.8,1.8,-3.0 * plyr->speed);
                 glRotatef(180,1,0,0);
                 glRotatef(180,0,0,1);
-                textNum->drawText(scoreStr,0.4);
+                textNum->drawText(plyrScore->strScore,0.4);
             glPopMatrix();
 
             // showing the floating +1 and +4
@@ -453,10 +456,6 @@ void _Scene::drawScene()
         }
        else {
             myCam->camReset();
-            //myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
-            //myCam->des.x = myCam->des.y = 0;
-            //myCam->des.z = -10;
-            //myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
             glPushMatrix();
                 glScalef(4.33,4.33,1.0);
                 pauseMenuBackground.drawParallax(width,height);
@@ -478,18 +477,12 @@ void _Scene::drawScene()
                     gameState = mainMenu;
                     paused = false;
 
-                    plyr->pos.x = 0;
-                    plyr->pos.y = 1;
-                    plyr->pos.z = -7;
+                    plyr->pos = plyr->menuPos;
+                    plyr->rot = plyr->menuRot;
                     plyr->scale = 1.0;
                     menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
             }
-            //glMatrixMode(GL_PROJECTION);
-            //glLoadIdentity();
-            //glMatrixMode(GL_MODELVIEW);
-        //glLoadIdentity();
         }
-        //glDepthFunc(GL_NEVER);
         break;
       case gameOver:
         // 1. Draw the world frozen (same camera as inGame but no updateInGame)
@@ -501,11 +494,12 @@ void _Scene::drawScene()
         glLoadIdentity();
 
         myCam->des = plyr->pos;
-        myCam->des.y += 0.5f;
+        myCam->des.y += 0.5;
         myCam->rotAngle.x = 180;
         myCam->rotAngle.y = 0;
-        myCam->distance = 4.0f / (1.0f + 4.0f * plyr->speed);
+        myCam->distance = 4.0 / (1 +  2 * plyr->speed);
         myCam->rotateXY();
+
         myCam->setUpCamera();
 
         // Draw player & obstacles exactly like inGame, but without moving them
@@ -626,13 +620,9 @@ void _Scene::drawScene()
             gameOverButtons[goMainMenu].clicked = false;
 
             // Reset player + obstacles + health
-            plyr->rot.x = 0;
-            plyr->rot.y = 0;
-            plyr->rot.z = 270;
+            plyr->rot = plyr->menuRot;
             plyr->scale = 1.0f;
-            plyr->pos.x = 0.0f;
-            plyr->pos.z = -7.0f;
-            plyr->pos.y = 1.0f;
+            plyr->pos = plyr->menuPos;
             plyr->speed = 0.0f;
             plyr->accelerating = false;
 
@@ -666,24 +656,19 @@ void _Scene::drawScene()
         myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
         glPushMatrix();
             glScalef(4.33,4.33,1.0);
+            glColor3f(1.0,1.0,1.0);
             menuBackground.drawParallax(width,height);
         glPopMatrix();
         glPushMatrix();
             glPushMatrix();
-
-                glTranslatef(plyr->pos.x,0.7,plyr->pos.z);
-                //glRotatef(90,1,0,0);
-                //glRotatef(90,0,1,0);
-                //glRotatef(90,0,0,1);
-                glRotatef(30,1,0,0);
-                glRotatef(plyr->rot.z,0,1,0);
-                obj->drawOBJ();
+                plyr->rot.x = 30;
+                glColor3f(0.7,0.7,1.0);
+                plyr->drawPlayer();
             glPopMatrix();
-            //plyr->drawPlayer();
-            if (animationTimer->getTicks() >= 10) { plyr->rot.z += 0.2; animationTimer->reset(); }
+            if (animationTimer->getTicks() >= 10) { plyr->rot.y += 0.2; animationTimer->reset(); }
         glPopMatrix();
         glPushMatrix();
-            //printf("%f\t%f\t%f\n",mousePos.x,mousePos.y,msZ);
+            glColor3f(1.0,1.0,1.0);
             mainMenuElements[newGame].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0));
             mainMenuElements[help].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[help].pos,0,0,2,1.0));
             mainMenuElements[exit].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,mainMenuElements[exit].pos,0,0,1.8,1.0));
@@ -692,11 +677,12 @@ void _Scene::drawScene()
             mainMenuElements[newGame].clicked = false;
             resetObstacles();       // make sure cars are in front again
             playerHealth.reset();   // reset health on new game
-            plyr->rot.x = plyr->rot.y = 0;
-            plyr->rot.z = 270;
-            plyr->scale = 0.1;
+            plyr->rot.x = 0;
+            plyr->rot.y = 0;
+            plyr->rot.z = 0;
+            plyr->scale = 0.15;
             plyr->pos.x = plyr->pos.z = 0;
-            plyr->pos.y = 0.11;
+            plyr->pos.y = 0.05;
             myCam->eye = plyr->pos;
             myCam->des = plyr->pos;
             myCam->eye.z -= 3;
@@ -716,13 +702,6 @@ void _Scene::drawScene()
             helpMenuReturn.drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0));
             if (helpMenuReturn.clicked) { helpMenuReturn.clicked = false; helpMenu = false; }
         }
-        /*glPushMatrix();
-            textUpper->drawText("TEST TEXT",0.2);
-            glTranslatef(0,-0.2,0);
-            textLower->drawText("TEST LOWER",0.2);
-            glTranslatef(0,-0.2,0);
-            textNum->drawText("ABCDE",0.2);
-        glPopMatrix();*/
         break;
 
     case landing:
@@ -760,7 +739,6 @@ void _Scene::mouseMapping(int x, int y)
     mousePos.x = msX * 100;
     glReadPixels(x,(int)winY,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&winZ);
     gluUnProject(winX,winY,winZ,projectionM,ModelViewM,viewPort,&msX,&msY,&msZ);
-//    gluUnProject(winX,winY,-10.0,ModelViewM,projectionM,viewPort,&mousePos.x,&mousePos.y,&msZ);
 }
 
 void _Scene::updateInGame()
@@ -881,8 +859,8 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (!plyr->accelerating) plyr->accelTmr = chrono::system_clock::now();
                     plyr->accelerating = true;
                 }
-                if (wParam == 65) plyr->movement = plyr->right;
-                else if (wParam == 68) plyr->movement = plyr->left;
+                if (wParam == 65 && (Apressed == false || Dpressed == false)) { Apressed = true; plyr->movement = plyr->left; }
+                if (wParam == 68 && (Apressed == false || Dpressed == false)) { Dpressed = true; plyr->movement = plyr->right; }
             }
  //           myInput->keyPressed(mdl3D,mdl3DW);
         break;
@@ -891,6 +869,16 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             myInput->wParam = wParam;
             plyr->movement = plyr->none;
             if (wParam == 87) plyr->accelerating = false;
+            if (wParam == 65) {
+                Apressed = false;
+                if (Dpressed == false) plyr->movement = plyr->none;
+                else plyr->movement = plyr->right;
+            }
+            if (wParam == 68) {
+                Dpressed = false;
+                if (Apressed == false) plyr->movement = plyr->none;
+                else plyr->movement = plyr->left;
+            }
             //myInput->keyUp(mySprite);
             //mdl3D->actionTrigger=mdl3D->STAND;
             //mdl3DW->actionTrigger=mdl3DW->STAND;

@@ -152,7 +152,8 @@ class _Scene
         void checkCollectibleCollisions();
         bool isSafeCollectibleSpawn(float lanx, float zStart);
 
-
+        bool Apressed = false;
+        bool Dpressed = false;
 
 
 

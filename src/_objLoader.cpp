@@ -129,17 +129,11 @@ bool _objLoader::loadOBJ(const char* path, const char* mtl)
 void _objLoader::drawOBJ()
 {
     glPushMatrix();
-    glScalef(scale,scale,scale);
-    glTranslatef(pos.x,pos.y,pos.z);
-    glRotated(rot.x,1,0,0);
-    glRotated(rot.y,0,1,0);
-    glRotated(rot.z,0,0,1);
 
     glDisable(GL_COLOR_MATERIAL);
     glClear(GL_TEXTURE_2D);
     if (textures.size() <= 0) glDisable(GL_TEXTURE_2D);
 
-    glColor3f(0.8,1.0,0.8);
     int matIndex = 0;
 
     for (int i = 0; i < vertices.size(); i++) {

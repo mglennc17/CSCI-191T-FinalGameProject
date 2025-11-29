@@ -2,7 +2,9 @@
 #define _PLAYER_H
 
 #include <_3dmodelloader.h>
+#include <_objLoader.h>
 #include <_timer.h>
+#include <_common.h>
 
 class _player
 {
@@ -18,11 +20,17 @@ class _player
         _3DModelLoader *mdl = new _3DModelLoader();
         _3DModelLoader *wpn = new _3DModelLoader();
 
+        _objLoader *body = new _objLoader();
+        _objLoader *whls = new _objLoader();
+
+        _objLoader *whlsTurn = new _objLoader();
+
         int health = 5;
         vec3 pos;
         vec3 rot;
         float scale;
         bool invinsible = false;
+        bool wheelsFlipped = false;
 
         int movement;
         enum {menu,none,left,right};
@@ -33,6 +41,12 @@ class _player
 
         bool accelerating;
         chrono::time_point<chrono::system_clock> accelTmr;
+
+        vec3 menuPos;
+        vec3 menuRot;
+
+        int actions;
+        enum {idle,drive,turn};
 
     protected:
 

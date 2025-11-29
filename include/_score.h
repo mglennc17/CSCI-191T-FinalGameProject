@@ -16,7 +16,7 @@ class _score
         void updateScore(float);
 
         float playerScore;
-        char strScore[5];
+        char strScore[6];
 
     protected:
 
