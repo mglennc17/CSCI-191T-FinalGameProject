@@ -121,6 +121,8 @@ class _Scene
 
         void updateInGame();
         void checkPlayerObstacleCollisions();
+        float crashDelayTimer = 0.0;
+        bool pendingGameOver = false;
 
         // collectibles
         // 50 coins and 25 dollars

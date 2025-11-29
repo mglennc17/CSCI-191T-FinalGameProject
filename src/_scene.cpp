@@ -765,17 +765,42 @@ void _Scene::mouseMapping(int x, int y)
 
 void _Scene::updateInGame()
 {
-    // Approximate 60 FPS for now, can replace with real dt later if needed
-    const float dt = 0.016;
-    playerHealth.update(dt);
-    checkPlayerObstacleCollisions();
+    // Approximate 60 FPS for now
+    const float dt = 0.016f;
 
+    // -----------------------------------------
+    // 1. Handle delayed Game Over (third crash)
+    // -----------------------------------------
+    if (pendingGameOver)
+    {
+        crashDelayTimer -= dt;
+
+        // still allow flashing red effect during delay
+        playerHealth.update(dt);
+
+        if (crashDelayTimer <= 0.0f) {
+            pendingGameOver = false;
+            gameState = gameOver;
+        }
+
+        // Do NOT continue normal gameplay updates
+        return;
+    }
+
+    // -----------------------------------------
+    // 2. Normal gameplay updates
+    // -----------------------------------------
+    playerHealth.update(dt);
+
+    checkPlayerObstacleCollisions();
     updateCollectibles(dt);
     checkCollectibleCollisions();
 
-    if(pickupTextTimer > 0.0){
+    // Update floating “+1 / +4” timer
+    if (pickupTextTimer > 0.0f) {
         pickupTextTimer -= dt;
-        if(pickupTextTimer < 0.0) pickupTextTimer = 0.0;
+        if (pickupTextTimer < 0.0f)
+            pickupTextTimer = 0.0f;
     }
 }
 
@@ -811,20 +836,20 @@ void _Scene::checkPlayerObstacleCollisions()
 
             playerHealth.registerHit();
 
-            // If this hit killed the player, go straight to Game Over
             if (playerHealth.isDead()) {
-                gameState   = gameOver;
-                paused      = false;
-                justCrashed = true;
+                // play special third-crash sound
+                menuMsc->playSounds("sounds/thirdCrash.mp3");
 
-                // Stop the car so camera stays stable
-                plyr->speed        = 0.0;
+                // start countdown to game over
+                pendingGameOver = true;
+                crashDelayTimer = 5.0f;
+
+                // freeze gameplay movement
+                plyr->speed = 0.0;
                 plyr->accelerating = false;
+                paused = false;
 
-                // Optional: special third-crash sound
-                // menuMsc->playSounds("sounds/thirdCrash.m4a");
-
-                return; // no need to check other obstacles this frame
+                return;
             }
 
             // Otherwise, play normal crash sound only for a *new* hit
