@@ -350,7 +350,7 @@ void _Scene::drawScene()
        if (!paused) {
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            myCam->fov = 45 * (plyr->speed + 1);
+            myCam->fov = 45 * (plyr->speed/plyr->maxSpeed + 1);
             gluPerspective(myCam->fov,(float)width/(float)height,0.1,1000.0);
 
             glMatrixMode(GL_MODELVIEW);
@@ -360,11 +360,11 @@ void _Scene::drawScene()
             myCam->des.y += 0.5;
             myCam->rotAngle.x = 180;
             myCam->rotAngle.y = 0;
-            myCam->distance = 4.0 / (1 +  2 * plyr->speed);
+            myCam->distance = 4.0 / (1 +  2 * (plyr->speed/plyr->maxSpeed));
             myCam->rotateXY();
 
             // screen shake when recently hit
-            if (playerHealth.isFlashing()) {
+            if (playerHealth.isFlashing()) {// && animationTimer->getTicks() >= 9) {
                 // how strong the shake feels – tweak if too weak/strong
                 const float strength = 0.08;
 
@@ -376,8 +376,8 @@ void _Scene::drawScene()
                 myCam->eye.x += nx * strength;
                 myCam->eye.y += ny * strength * 0.5;  // smaller vertical shake
                 myCam->eye.z += nz * strength;
-                }
-                myCam->setUpCamera();
+            }
+            myCam->setUpCamera();
             //myCam->setUpCamera();
             glPushMatrix();
                 if (playerHealth.isFlashing()) {

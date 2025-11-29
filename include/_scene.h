@@ -155,7 +155,7 @@ class _Scene
         bool Apressed = false;
         bool Dpressed = false;
 
-
+        vec2 prevMouse;
 
 
 

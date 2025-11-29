@@ -41,8 +41,9 @@ void _player::drawPlayer()
             if (rot.y <= 30) rot.y += 0.2 * speed;
         }
         else if (movement != menu) {
-            if (rot.y > 0) rot.y -= 0.4;
-            if (rot.y < 0) rot.y += 0.4;
+            //if (rot.y > 0) rot.y -= 0.4;
+            //if (rot.y < 0) rot.y += 0.4;
+            rot.y *= 0.95;
             if (pos.x > 0.9) pos.x = 0.9;
             if (pos.x < -0.9) pos.x = -0.9;
         }
@@ -67,19 +68,19 @@ void _player::drawPlayer()
             if (pos.x > 0.9) pos.x = 0.9;
             if (pos.x < -0.9) pos.x = -0.9;
 
-            glTranslatef(0,0,5);
+            glTranslatef(0,0,-10);
             rot.z *= 0.8;
             rot.z += 5 * (rot.y - prevRot);
             if (rot.z > 7) rot.z = 7;
             else if (rot.z < -7) rot.z = -7;
-            glTranslatef(0,0,-5);
+            glTranslatef(0,0,10);
             prevRot = rot.y;
             animTmr = chrono::system_clock::now();
     }
 
     diff = nw - wheelTmr;
 
-    if(diff.count() * (16 * speed) > 16 && !crashed) {
+    if(diff.count() * (16 * speed) > 16 && !crashed && movement != menu) {
         frameCount++; wheelTmr = chrono::system_clock::now();
         pos.x += 0.2 * rot.y / ( 270 );
     }
