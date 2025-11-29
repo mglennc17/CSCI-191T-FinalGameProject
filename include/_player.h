@@ -22,14 +22,15 @@ class _player
 
         _objLoader *body = new _objLoader();
         _objLoader *whls = new _objLoader();
-
+        _objLoader driveFrames[7];
+        _objLoader turnFrames[7];
         _objLoader *whlsTurn = new _objLoader();
 
         int health = 5;
         vec3 pos;
         vec3 rot;
         float scale;
-        bool invinsible = false;
+        bool crashed = false;
         bool wheelsFlipped = false;
 
         int movement;
@@ -40,13 +41,21 @@ class _player
         float accel;
 
         bool accelerating;
+        chrono::time_point<chrono::system_clock> wheelTmr;
         chrono::time_point<chrono::system_clock> accelTmr;
+        chrono::time_point<chrono::system_clock> animTmr;
+        chrono::time_point<chrono::system_clock> nw;
+
+        chrono::duration<float,milli>diff;
 
         vec3 menuPos;
         vec3 menuRot;
+        float prevRot;
 
         int actions;
         enum {idle,drive,turn};
+
+        int frameCount = 0;
 
     protected:
 

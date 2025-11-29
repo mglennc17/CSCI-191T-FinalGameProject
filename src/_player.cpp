@@ -12,7 +12,9 @@ _player::_player()
     maxSpeed = 1.0;
     accelerating = false;
     accel = 0.1;
-
+    animTmr = chrono::system_clock::now();
+    wheelTmr = chrono::system_clock::now();
+    prevRot = 0;
     //ctor
 }
 
@@ -25,27 +27,27 @@ void _player::drawPlayer()
 {
     glPushMatrix();
 
-    if(myTime->getTicks() >= 5) {
-        //glTranslatef(mdl->pos.x,mdl->pos.y,mdl->pos.z);
+    nw = chrono::system_clock::now();
+    diff = nw - animTmr;
+
+    if(diff.count() > 16 && !crashed && movement != menu) {
 
         if (movement == right && pos.x >= -0.9) {
-            if (rot.y > 0) rot.y -= 0.1 * speed;
-            if (rot.y >= -30) rot.y -= 0.1 * speed;
+            if (rot.y > 0) rot.y -= 0.2 * speed;
+            if (rot.y >= -30) rot.y -= 0.2 * speed;
         }
         else if (movement == left && pos.x <= 0.9) {
-            if (rot.y < 0) rot.y += 0.1 * speed;
-            if (rot.y <= 30) rot.y += 0.1 * speed;
+            if (rot.y < 0) rot.y += 0.2 * speed;
+            if (rot.y <= 30) rot.y += 0.2 * speed;
         }
         else if (movement != menu) {
-            if (rot.y > 0) rot.y -= 0.2;
-            if (rot.y < 0) rot.y += 0.2;
+            if (rot.y > 0) rot.y -= 0.4;
+            if (rot.y < 0) rot.y += 0.4;
             if (pos.x > 0.9) pos.x = 0.9;
             if (pos.x < -0.9) pos.x = -0.9;
         }
-    }
     if (accelerating) {
-        auto nw = chrono::system_clock::now();
-        chrono::duration<float,milli>diff = nw - accelTmr;
+        diff = nw - accelTmr;
         if (speed < maxSpeed) {
                 accel = diff.count()/100000;
                 accel *= (1 - ((speed) / (maxSpeed)));
@@ -57,36 +59,47 @@ void _player::drawPlayer()
         if (speed > 0) speed -= 0.001;
     }
 
+    diff = nw - animTmr;
+
     if (speed < 0) speed = 0;
     if (speed > maxSpeed) speed = maxSpeed;
 
-        if (pos.x > 0.9) pos.x = 0.9;
-        if (pos.x < -0.9) pos.x = -0.9;
+            if (pos.x > 0.9) pos.x = 0.9;
+            if (pos.x < -0.9) pos.x = -0.9;
 
-        if (movement != menu) {
             glTranslatef(0,0,5);
-            pos.x += 0.1 * speed * rot.y / ( 270 );
+            pos.x += 0.2 * speed * rot.y / ( 270 );
+            rot.z *= 0.8;
+            rot.z += 5 * (rot.y - prevRot);
+            if (rot.z > 7) rot.z = 7;
+            else if (rot.z < -7) rot.z = -7;
             glTranslatef(0,0,-5);
-        }
-        glTranslatef(pos.x,pos.y,pos.z);
+            prevRot = rot.y;
+            animTmr = chrono::system_clock::now();
+    }
 
-        glRotatef(rot.x,1.0,0,0);
-        glRotatef(rot.y,0,1.0,0);
-        glRotatef(rot.z,0,0,1.0);
+    diff = nw - wheelTmr;
 
-        glScalef(scale,scale,scale);
+    if(diff.count() * (16 * speed) > 16 && !crashed) { frameCount++; wheelTmr = chrono::system_clock::now(); }
 
-        if(myTime->getTicks() >= 5) {
-            myTime->reset();
-            mdl->Actions();
-            wpn->Actions();
-        }
-        mdl->Draw();
-        wpn->Draw();
-        body->drawOBJ();
-        if (movement == left) whlsTurn->drawOBJ();
-        else if (movement == right) {glScalef(-1,1,1); whlsTurn->drawOBJ();}
-        else whls->drawOBJ();
+
+    glTranslatef(pos.x,pos.y,pos.z);
+
+    glRotatef(rot.x,1.0,0,0);
+    glRotatef(rot.y,0,1.0,0);
+    glRotatef(rot.z,0,0,1.0);
+
+    glScalef(scale,scale,scale);
+
+    mdl->Draw();
+    wpn->Draw();
+    body->drawOBJ();
+
+    glRotatef(-rot.z,0,0,1.0);
+
+    if (movement == right) {glScalef(-1,1,1),turnFrames[frameCount % 7].drawOBJ(); }
+    else if (movement == left) {turnFrames[frameCount % 7].drawOBJ(); }
+    else driveFrames[frameCount % 7].drawOBJ();
 
     glPopMatrix();
 }

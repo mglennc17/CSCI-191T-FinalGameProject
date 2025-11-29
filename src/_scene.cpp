@@ -144,7 +144,23 @@ void _Scene::initGL()
     obj->loadOBJ("models/car/nissan.obj","models/car/nissan.mtl");
     plyr->body->loadOBJ("models/car/nissanTest.obj","models/car/nissanTest.mtl");
     plyr->whls->loadOBJ("models/car/nissanWheels.obj","models/car/nissanWheels.mtl");
-    plyr->whlsTurn->loadOBJ("models/car/nissanWheels2.obj","models/car/nissanWheels2.mtl");
+    plyr->whlsTurn->loadOBJ("models/car/drive1.obj","models/car/drive1.mtl");
+
+    plyr->driveFrames[0].loadOBJ("models/car/drive1.obj","models/car/nissanWheels.mtl");
+    plyr->driveFrames[1].loadOBJ("models/car/drive2.obj","models/car/nissanWheels.mtl");
+    plyr->driveFrames[2].loadOBJ("models/car/drive3.obj","models/car/nissanWheels.mtl");
+    plyr->driveFrames[3].loadOBJ("models/car/drive4.obj","models/car/nissanWheels.mtl");
+    plyr->driveFrames[4].loadOBJ("models/car/drive5.obj","models/car/nissanWheels.mtl");
+    plyr->driveFrames[5].loadOBJ("models/car/drive6.obj","models/car/nissanWheels.mtl");
+    plyr->driveFrames[6].loadOBJ("models/car/drive7.obj","models/car/nissanWheels.mtl");
+
+    plyr->turnFrames[0].loadOBJ("models/car/turn1.obj","models/car/nissanWheels.mtl");
+    plyr->turnFrames[1].loadOBJ("models/car/turn2.obj","models/car/nissanWheels.mtl");
+    plyr->turnFrames[2].loadOBJ("models/car/turn3.obj","models/car/nissanWheels.mtl");
+    plyr->turnFrames[3].loadOBJ("models/car/turn4.obj","models/car/nissanWheels.mtl");
+    plyr->turnFrames[4].loadOBJ("models/car/turn5.obj","models/car/nissanWheels.mtl");
+    plyr->turnFrames[5].loadOBJ("models/car/turn6.obj","models/car/nissanWheels.mtl");
+    plyr->turnFrames[6].loadOBJ("models/car/turn7.obj","models/car/nissanWheels.mtl");
 
     //myTexture->loadTexture("images/skybox.png");
     //tex = myTexture->textID;
@@ -581,6 +597,7 @@ void _Scene::drawScene()
 
         // 5. Handle clicks for game over buttons
         if (gameOverButtons[goPlayAgain].clicked) {
+            plyr->crashed = false;
             gameOverButtons[goPlayAgain].clicked = false;
 
             // Reset player state (same as starting a new game from main menu)
@@ -617,6 +634,7 @@ void _Scene::drawScene()
             gameState = inGame;
         }
         else if (gameOverButtons[goMainMenu].clicked) {
+            plyr->crashed = false;
             gameOverButtons[goMainMenu].clicked = false;
 
             // Reset player + obstacles + health
@@ -817,6 +835,7 @@ void _Scene::checkPlayerObstacleCollisions()
             if (playerHealth.isDead()) {
                 // play special third-crash sound
                 menuMsc->playSounds("sounds/thirdCrash.mp3");
+                plyr->crashed = true;
 
                 // start countdown to game over
                 pendingGameOver = true;
