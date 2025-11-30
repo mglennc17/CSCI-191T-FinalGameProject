@@ -8,6 +8,7 @@ _Scene::_Scene()
     rng = mt19937(dev());
     rand100 = uniform_int_distribution<mt19937::result_type>(1,100);
     rand6 = uniform_int_distribution<mt19937::result_type>(1,6);
+    rand4 = uniform_int_distribution<mt19937::result_type>(1,4);
     rand2 = uniform_int_distribution<mt19937::result_type>(1,2);
     animationTimer->startTime = clock();
 
@@ -59,7 +60,8 @@ void _Scene::resetObstacles()
         obstcls[i].rot.z = 270;
         obstcls[i].scale = 0.1;
         obstcls[i].pos.y = 0.11;
-        obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30);
+        if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
+        if (numLanes == 4) obstcls[i].pos.x = 1.25 - (rand4(rng) * (2.0/numLanes));
         //if (i % 3) obstcls[i].pos.x = -0.7;
         //else if (i % 2) obstcls[i].pos.x = 0.7;
         obstcls[i].pos.z = 15.0 + i * 6.0;
@@ -68,6 +70,8 @@ void _Scene::resetObstacles()
 
 void _Scene::initGL()
 {
+
+    numLanes = 4;
 
     gameState = mainMenu;
     frameCount = 0;
@@ -164,7 +168,7 @@ void _Scene::initGL()
     tunnel->loadOBJ("models/terrain/tunnel.obj","models/terrain/tunnel.mtl");
     tunnel->rot.y = 180;
     tunnel->pos.z = 10;
-    tunnel->scale = 0.4;
+    tunnel->scale = 0.35;
 
     vector<char *> Texs;
     Texs.push_back("models/terrain/concrete.png");
@@ -417,7 +421,11 @@ void _Scene::drawScene()
             if (animationTimer->getTicks()>= 10) {
                 for (int i = 0; i < 20; i++) {
                     obstcls[i].pos.z -= (0.1 * plyr->speed);
-                    if(obstcls[i].pos.z <= -20) { obstcls[i].pos.z = 40; obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30); }
+                    if(obstcls[i].pos.z <= -20) {
+                        obstcls[i].pos.z = 40;
+                        if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
+                        if (numLanes == 4) obstcls[i].pos.x = 1.25 - (rand4(rng) * (2.0/numLanes));
+                    }
                 }
                 tunnel->pos.z += (0.35 * plyr->speed);
                 if (tunnel->pos.z >= 50) tunnel->pos.z = 10;

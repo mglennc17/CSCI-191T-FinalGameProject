@@ -107,6 +107,7 @@ class _Scene
         random_device dev;
         mt19937 rng;
         uniform_int_distribution<mt19937::result_type> rand2;
+        uniform_int_distribution<mt19937::result_type> rand4;
         uniform_int_distribution<mt19937::result_type> rand6;
         uniform_int_distribution<mt19937::result_type> rand100;
 
@@ -156,6 +157,7 @@ class _Scene
         bool Dpressed = false;
 
         vec2 prevMouse;
+        int numLanes;
 
 
 
