@@ -76,7 +76,7 @@ void _Scene::initGL()
     gameState = mainMenu;
     frameCount = 0;
 
-    glShadeModel(GL_FLAT); // to handle GPU shaders
+    glShadeModel(GL_SMOOTH); // to handle GPU shaders
     glClearColor(0.0f,0.0f,0.0f,0.0f); // black background color
     glClearDepth(2.0f);         //depth test for layers
     glEnable(GL_DEPTH_TEST);    //activate depth test
