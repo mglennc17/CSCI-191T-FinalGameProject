@@ -115,7 +115,6 @@ void _Scene::initGL()
     gameOverButtons[goPlayAgain].initButton("images/menu/pauseMenuReturn.png", -2.0f, -2.5f);
     gameOverButtons[goMainMenu].initButton("images/menu/pauseMenuExit.png",   2.0f, -2.5f);
 
-
     road->parallaxInit("images/textures/road.png");
     road->xMax = 25;
     road->yMax = 2;
@@ -161,6 +160,16 @@ void _Scene::initGL()
     plyr->turnFrames[4].loadOBJ("models/car/turn5.obj","models/car/nissanWheels.mtl");
     plyr->turnFrames[5].loadOBJ("models/car/turn6.obj","models/car/nissanWheels.mtl");
     plyr->turnFrames[6].loadOBJ("models/car/turn7.obj","models/car/nissanWheels.mtl");
+
+    tunnel->loadOBJ("models/terrain/tunnel.obj","models/terrain/tunnel.mtl");
+    tunnel->rot.y = 180;
+    tunnel->pos.z = 10;
+    tunnel->scale = 0.4;
+
+    vector<char *> Texs;
+    Texs.push_back("models/terrain/concrete.png");
+    Texs.push_back("models/terrain/tunnel.png");
+    tunnel->textureOBJ(Texs);
 
     //myTexture->loadTexture("images/skybox.png");
     //tex = myTexture->textID;
@@ -378,6 +387,7 @@ void _Scene::drawScene()
                 myCam->eye.z += nz * strength;
             }
             myCam->setUpCamera();
+
             //myCam->setUpCamera();
             glPushMatrix();
                 if (playerHealth.isFlashing()) {
@@ -388,6 +398,14 @@ void _Scene::drawScene()
                 plyr->rot.x = 0;
                 plyr->drawPlayer();
             glPopMatrix();
+
+            glPushMatrix();
+                //glRotatef(180,0,1,0);
+                //glScalef(0.4,0.4,0.4);
+                //glTranslatef(0,0,-5);
+                tunnel->drawOBJ();
+            glPopMatrix();
+
             //glPushMatrix();
             //    myTexture->bindTexture();
             //    glRotatef(270,1,0,0);
@@ -401,6 +419,8 @@ void _Scene::drawScene()
                     obstcls[i].pos.z -= (0.1 * plyr->speed);
                     if(obstcls[i].pos.z <= -20) { obstcls[i].pos.z = 40; obstcls[i].pos.x = 1.05 - (rand6(rng) * 0.30); }
                 }
+                tunnel->pos.z += (0.35 * plyr->speed);
+                if (tunnel->pos.z >= 50) tunnel->pos.z = 10;
                 ground->prlxScrollAuto("right",0.03 * plyr->speed);
                 road->prlxScrollAuto("right", 0.03 * plyr->speed);
                 animationTimer->reset();
@@ -416,7 +436,7 @@ void _Scene::drawScene()
                 glRotatef(90.0,0,0,1.0);
                 glRotatef(90.0,0,1,0);
                 glTranslatef(0,0,10);
-                road->drawParallax(200.0,2.0);
+                //road->drawParallax(200.0,2.0);
                 glTranslatef(1,-1,0);
                 glScalef(1.0,200.0,1.0);
                 glTranslatef(0,0,-0.05);
@@ -498,6 +518,7 @@ void _Scene::drawScene()
                     plyr->scale = 1.0;
                     menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
             }
+
         }
         break;
       case gameOver:

@@ -53,7 +53,7 @@ class _Scene
         _obstacle obstcls[20];
         GLuint tex;
 
-        _objLoader *sky = new _objLoader();
+        _objLoader *tunnel = new _objLoader();
 
         _skyBox *carShop = new _skyBox();
         _skyBox *daySky = new _skyBox();

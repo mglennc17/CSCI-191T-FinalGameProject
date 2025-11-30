@@ -129,6 +129,11 @@ bool _objLoader::loadOBJ(const char* path, const char* mtl)
 void _objLoader::drawOBJ()
 {
     glPushMatrix();
+    glScaled(scale,scale,scale);
+    glRotatef(rot.x,1,0,0);
+    glRotatef(rot.y,0,1,0);
+    glRotatef(rot.z,0,0,1);
+    glTranslated(pos.x,pos.y,pos.z);
 
     glDisable(GL_COLOR_MATERIAL);
     glClear(GL_TEXTURE_2D);
