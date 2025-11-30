@@ -50,7 +50,7 @@ class _Scene
         _textDisplay *textLower = new _textDisplay();
         _textDisplay *textNum = new _textDisplay();
         _score *plyrScore = new _score();
-        _obstacle obstcls[20];
+        _obstacle obstcls[30];
         GLuint tex;
 
         _objLoader *tunnel = new _objLoader();

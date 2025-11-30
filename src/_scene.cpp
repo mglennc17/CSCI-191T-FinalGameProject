@@ -55,7 +55,7 @@ void _Scene::reSizeScene(int width, int height)
 
 void _Scene::resetObstacles()
 {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
         obstcls[i].rot.x = obstcls[i].rot.y = 0;
         obstcls[i].rot.z = 270;
         obstcls[i].scale = 0.1;
@@ -64,7 +64,7 @@ void _Scene::resetObstacles()
         if (numLanes == 4) obstcls[i].pos.x = 1.25 - (rand4(rng) * (2.0/numLanes));
         //if (i % 3) obstcls[i].pos.x = -0.7;
         //else if (i % 2) obstcls[i].pos.x = 0.7;
-        obstcls[i].pos.z = 15.0 + i * 6.0;
+        obstcls[i].pos.z = 15.0 + i * 4.0;
     }
 }
 
@@ -404,9 +404,6 @@ void _Scene::drawScene()
             glPopMatrix();
 
             glPushMatrix();
-                //glRotatef(180,0,1,0);
-                //glScalef(0.4,0.4,0.4);
-                //glTranslatef(0,0,-5);
                 tunnel->drawOBJ();
             glPopMatrix();
 
@@ -419,7 +416,7 @@ void _Scene::drawScene()
             // reset color so we don't tint other things
             glColor3f(0.6, 0.6, 0.64);
             if (animationTimer->getTicks()>= 10) {
-                for (int i = 0; i < 20; i++) {
+                for (int i = 0; i < 10; i++) {
                     obstcls[i].pos.z -= (0.1 * plyr->speed);
                     if(obstcls[i].pos.z <= -20) {
                         obstcls[i].pos.z = 40;
@@ -464,6 +461,7 @@ void _Scene::drawScene()
             //plyrScore->updateScore(plyr->speed);
             plyrScore->playerScore = totalScore;
             plyrScore->updateScore(1);
+            glDisable(GL_DEPTH_TEST);
             glPushMatrix();
                 glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
                 glTranslatef(-1.8,1.8,-3.0 * plyr->speed);
@@ -471,6 +469,7 @@ void _Scene::drawScene()
                 glRotatef(180,0,0,1);
                 textNum->drawText(plyrScore->strScore,0.4);
             glPopMatrix();
+            glEnable(GL_DEPTH_TEST);
 
             // showing the floating +1 and +4
             if(pickupTextTimer > 0.0){
@@ -552,6 +551,10 @@ void _Scene::drawScene()
             plyr->drawPlayer();
         glPopMatrix();
 
+        glPushMatrix();
+            tunnel->drawOBJ();
+        glPopMatrix();
+
         for (int i = 0; i < 10; i++) {
             glPushMatrix();
                 obstcls[i].drawObstacle(obstacleMdl);
@@ -567,7 +570,7 @@ void _Scene::drawScene()
             glRotatef(90.0,0,1,0);
             glTranslatef(0,0,10);
             glColor3f(0.6,0.6,0.6);
-            road->drawParallax(200.0,2.0);
+            //road->drawParallax(200.0,2.0);
             glTranslatef(1,-1,0);
             glScalef(1.0,200.0,1.0);
             glTranslatef(0,0,-0.05);
@@ -632,11 +635,11 @@ void _Scene::drawScene()
             // Reset player state (same as starting a new game from main menu)
             plyr->rot.x = 0;
             plyr->rot.y = 0;
-            plyr->rot.z = 270;
-            plyr->scale = 0.1f;
+            plyr->rot.z = 0;
+            //plyr->scale = 0.1f;
             plyr->pos.x = 0.0f;
-            plyr->pos.z = 0.0f;
-            plyr->pos.y = 0.11f;
+            //plyr->pos.z = 0.0f;
+            //plyr->pos.y = 0.11f;
             plyr->speed = 0.0f;
             plyr->accelerating = false;
 

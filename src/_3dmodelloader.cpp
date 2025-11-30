@@ -93,6 +93,8 @@ void _3DModelLoader::RenderFrame(int n, const struct md2_model_t* mdl)
 
   /* Enable model's texture */
   glBindTexture (GL_TEXTURE_2D, mdl->tex_id);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
   /* Draw the model */
   glBegin (GL_TRIANGLES);
