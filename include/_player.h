@@ -55,6 +55,8 @@ class _player
         int actions;
         enum {idle,drive,turn};
 
+        float bounds = 0.9;
+
         int frameCount = 0;
 
     protected:

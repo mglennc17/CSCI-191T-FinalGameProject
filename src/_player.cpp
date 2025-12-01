@@ -32,11 +32,11 @@ void _player::drawPlayer()
 
     if(diff.count() > 16 && !crashed && movement != menu) {
 
-        if (movement == right && pos.x >= -0.9) {
+        if (movement == right && pos.x >= -bounds + 0.01) {
             if (rot.y > 0) rot.y -= 0.2 * speed;
             if (rot.y >= -30) rot.y -= 0.2 * speed;
         }
-        else if (movement == left && pos.x <= 0.9) {
+        else if (movement == left && pos.x <= bounds -0.01) {
             if (rot.y < 0) rot.y += 0.2 * speed;
             if (rot.y <= 30) rot.y += 0.2 * speed;
         }
@@ -65,9 +65,6 @@ void _player::drawPlayer()
     if (speed < 0) speed = 0;
     if (speed > maxSpeed) speed = maxSpeed;
 
-            if (pos.x > 0.9) pos.x = 0.9;
-            if (pos.x < -0.9) pos.x = -0.9;
-
             glTranslatef(0,0,-10);
             rot.z *= 0.8;
             rot.z += 5 * (rot.y - prevRot);
@@ -85,7 +82,8 @@ void _player::drawPlayer()
         pos.x += 0.2 * rot.y / ( 270 );
     }
 
-
+    if (pos.x > bounds) pos.x = bounds;
+    if (pos.x < -bounds) pos.x = -bounds;
 
     glTranslatef(pos.x,pos.y,pos.z);
 

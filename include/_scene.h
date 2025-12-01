@@ -152,6 +152,7 @@ class _Scene
         void spawnCollectibles();
         void checkCollectibleCollisions();
         bool isSafeCollectibleSpawn(float lanx, float zStart);
+        void drawLevel();
 
         bool Apressed = false;
         bool Dpressed = false;
@@ -159,7 +160,7 @@ class _Scene
         vec2 prevMouse;
         int numLanes;
 
-
+        int level = 1;
 
     protected:
 

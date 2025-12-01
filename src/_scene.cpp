@@ -61,7 +61,7 @@ void _Scene::resetObstacles()
         obstcls[i].scale = 0.1;
         obstcls[i].pos.y = 0.11;
         if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
-        if (numLanes == 4) obstcls[i].pos.x = 1.25 - (rand4(rng) * (2.0/numLanes));
+        if (numLanes == 4) obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
         //if (i % 3) obstcls[i].pos.x = -0.7;
         //else if (i % 2) obstcls[i].pos.x = 0.7;
         obstcls[i].pos.z = 15.0 + i * 4.0;
@@ -88,6 +88,8 @@ void _Scene::initGL()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+    glFogf(GL_FOG_DENSITY,0.01);
 
     obstacleMdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");
     obstacleMdl->actionTrigger = obstacleMdl->STAND;
@@ -167,8 +169,8 @@ void _Scene::initGL()
 
     tunnel->loadOBJ("models/terrain/tunnel.obj","models/terrain/tunnel.mtl");
     tunnel->rot.y = 180;
-    tunnel->pos.z = 10;
-    tunnel->scale = 0.35;
+    tunnel->pos.z = 20;
+    tunnel->scale = 0.25;
 
     vector<char *> Texs;
     Texs.push_back("models/terrain/concrete.png");
@@ -183,6 +185,9 @@ void _Scene::initGL()
     //sky->textureOBJ(Texs);
     //bool res = obj->loadOBJ("models/cube.obj",vertices,uvs,normals);
 
+    plyr->bounds = 0.6;
+
+    level = 1;
 
 }
 
@@ -197,12 +202,16 @@ void _Scene::spawnCollectibles()
     int roll = (int)rand8(rng);
     bool spawnDollar = (roll == 1);
 
+    float laneX = 0;
+    float zStart = 0;
+
     if(spawnDollar && dollarScore < MAX_DOLLARS){
         //spawn in active dollar (dollar that haven't got collected)
         for(int i = 0; i < MAX_DOLLARS; ++i){
             if(!dollars[i].active){
-                float laneX = 1.05 - (rand6(rng) * 0.30);
-                float zStart = 20.0 + (float)(rand6(rng) * 5.0);
+                if (numLanes == 6) laneX = 1.05 - (rand6(rng) * 0.30);
+                else if (numLanes == 4) laneX = 0.9 - (rand4(rng) * 1.4 / numLanes);
+                zStart = 20.0 + (float)(rand6(rng) * 5.0);
 
                 dollars[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/dollar.png");
 
@@ -214,10 +223,12 @@ void _Scene::spawnCollectibles()
 
         for(int i = 0; i < MAX_COINS; ++i){
             if(!coins[i].active){
-                float lanX = 1.05 - (rand6(rng) * 0.30);
-                float zStart = 20.0 + (float)(rand6(rng) * 5.0);
+                if (numLanes == 6) laneX = 1.05 - (rand6(rng) * 0.30);
+                else if (numLanes == 4) laneX = 0.9 - (rand4(rng) * 1.4 / numLanes);
 
-                coins[i].init(lanX, 0.2, zStart, 0.08, (char*)"images/collectibles/coin.png");
+                zStart = 20.0 + (float)(rand6(rng) * 5.0);
+
+                coins[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/coin.png");
                 break;
             }
         }
@@ -346,6 +357,30 @@ bool _Scene::isSafeCollectibleSpawn(float lanx, float zStart)
     return true;
 }
 
+void _Scene::drawLevel()
+{
+    switch(level) {
+    case 1:
+        glPushMatrix();
+            tunnel->drawOBJ();
+        glPopMatrix();
+        break;
+    case 2:
+        glPushMatrix();
+            daySky->drawSkyBox();
+            glRotatef(90.0,0,0,1.0);
+            glRotatef(90.0,0,1,0);
+            glTranslatef(0,0,10);
+            road->drawParallax(200.0,2.0);
+            glTranslatef(1,-1,0);
+            glScalef(1.0,200.0,1.0);
+            glTranslatef(0,0,-0.05);
+            ground->drawParallax(200.0,1.0);
+        glPopMatrix();
+        break;
+    }
+}
+
 void _Scene::drawScene()
 {
 
@@ -392,6 +427,7 @@ void _Scene::drawScene()
             }
             myCam->setUpCamera();
 
+            glEnable(GL_FOG);
             //myCam->setUpCamera();
             glPushMatrix();
                 if (playerHealth.isFlashing()) {
@@ -402,26 +438,17 @@ void _Scene::drawScene()
                 plyr->rot.x = 0;
                 plyr->drawPlayer();
             glPopMatrix();
+            glColor3f(1.0,1.0,1.0);
 
-            glPushMatrix();
-                tunnel->drawOBJ();
-            glPopMatrix();
+            drawLevel();
 
-            //glPushMatrix();
-            //    myTexture->bindTexture();
-            //    glRotatef(270,1,0,0);
-            //    //glTranslatef(0,-70,0);
-            //    glutSolidSphere(1,20000,20000);
-            //glPopMatrix();
-            // reset color so we don't tint other things
-            glColor3f(0.6, 0.6, 0.64);
             if (animationTimer->getTicks()>= 10) {
                 for (int i = 0; i < 10; i++) {
                     obstcls[i].pos.z -= (0.1 * plyr->speed);
                     if(obstcls[i].pos.z <= -20) {
                         obstcls[i].pos.z = 40;
                         if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
-                        if (numLanes == 4) obstcls[i].pos.x = 1.25 - (rand4(rng) * (2.0/numLanes));
+                        if (numLanes == 4) obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
                     }
                 }
                 tunnel->pos.z += (0.35 * plyr->speed);
@@ -435,18 +462,6 @@ void _Scene::drawScene()
                 obstcls[i].drawObstacle(obstacleMdl);
                 glPopMatrix();
             }
-
-            glPushMatrix();
-                daySky->drawSkyBox();
-                glRotatef(90.0,0,0,1.0);
-                glRotatef(90.0,0,1,0);
-                glTranslatef(0,0,10);
-                //road->drawParallax(200.0,2.0);
-                glTranslatef(1,-1,0);
-                glScalef(1.0,200.0,1.0);
-                glTranslatef(0,0,-0.05);
-                ground->drawParallax(200.0,1.0);
-            glPopMatrix();
 
             //drawing coin and dollar
             for(int i = 0; i < MAX_COINS; ++i)
@@ -481,6 +496,8 @@ void _Scene::drawScene()
                 float lift = (1.0 - t) * 0.5;
 
                 glColor3f(1.0, 1.0, 1.0);
+
+            glDisable(GL_FOG);
 
                 glPushMatrix();
                    /* glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
@@ -551,9 +568,9 @@ void _Scene::drawScene()
             plyr->drawPlayer();
         glPopMatrix();
 
-        glPushMatrix();
-            tunnel->drawOBJ();
-        glPopMatrix();
+        glEnable(GL_FOG);
+
+        drawLevel();
 
         for (int i = 0; i < 10; i++) {
             glPushMatrix();
@@ -563,19 +580,6 @@ void _Scene::drawScene()
 
         glPushMatrix();
             daySky->drawSkyBox();
-        glPopMatrix();
-
-        glPushMatrix();
-            glRotatef(90.0,0,0,1.0);
-            glRotatef(90.0,0,1,0);
-            glTranslatef(0,0,10);
-            glColor3f(0.6,0.6,0.6);
-            //road->drawParallax(200.0,2.0);
-            glTranslatef(1,-1,0);
-            glScalef(1.0,200.0,1.0);
-            glTranslatef(0,0,-0.05);
-            ground->drawParallax(200.0,1.0);
-            glColor3f(1.0,1.0,1.0);
         glPopMatrix();
 
         // 2. Draw dark overlay in screen space
