@@ -177,6 +177,19 @@ void _Scene::initGL()
     Texs.push_back("models/terrain/tunnel.png");
     tunnel->textureOBJ(Texs);
 
+    bridge->loadOBJ("models/terrain/bridge.obj","models/terrain/bridge.mtl");
+    bridge->rot.y = 270;
+    bridge->pos.z = -12.5;
+    bridge->pos.x = -30;
+    bridge->pos.y = -15.5;
+    bridge->scale = 0.08;
+
+    Texs.clear();
+    Texs.push_back("models/terrain/bridge.png");
+    Texs.push_back("models/terrain/bridge.png");
+    bridge->textureOBJ(Texs);
+
+
     //myTexture->loadTexture("images/skybox.png");
     //tex = myTexture->textID;
     //sky->loadOBJ("models/sky/testSky.obj","models/sky/testSky.mtl");
@@ -187,7 +200,7 @@ void _Scene::initGL()
 
     plyr->bounds = 0.6;
 
-    level = 1;
+    level = 3;
 
 }
 
@@ -367,6 +380,7 @@ void _Scene::drawLevel()
         break;
     case 2:
         glPushMatrix();
+            glFogi(GL_FOG_COLOR,0.5);
             daySky->drawSkyBox();
             glRotatef(90.0,0,0,1.0);
             glRotatef(90.0,0,1,0);
@@ -376,6 +390,14 @@ void _Scene::drawLevel()
             glScalef(1.0,200.0,1.0);
             glTranslatef(0,0,-0.05);
             ground->drawParallax(200.0,1.0);
+        glPopMatrix();
+        break;
+    case 3:
+        glPushMatrix();
+            bridge->drawOBJ();
+            glDisable(GL_FOG);
+            daySky->drawSkyBox();
+            glEnable(GL_FOG);
         glPopMatrix();
         break;
     }
@@ -451,8 +473,10 @@ void _Scene::drawScene()
                         if (numLanes == 4) obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
                     }
                 }
-                tunnel->pos.z += (0.35 * plyr->speed);
+                tunnel->pos.z += (0.50 * plyr->speed);
+                bridge->pos.x -= (2.0 * plyr->speed);
                 if (tunnel->pos.z >= 50) tunnel->pos.z = 10;
+                if (bridge->pos.x <= -190) bridge->pos.x = -30;
                 ground->prlxScrollAuto("right",0.03 * plyr->speed);
                 road->prlxScrollAuto("right", 0.03 * plyr->speed);
                 animationTimer->reset();

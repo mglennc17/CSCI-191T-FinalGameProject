@@ -54,6 +54,7 @@ class _Scene
         GLuint tex;
 
         _objLoader *tunnel = new _objLoader();
+        _objLoader *bridge = new _objLoader();
 
         _skyBox *carShop = new _skyBox();
         _skyBox *daySky = new _skyBox();
