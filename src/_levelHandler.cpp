@@ -105,7 +105,6 @@ void _levelHandler::drawLevel()
 {
     switch(level) {
     case 1:
-        glEnable(GL_FOG);
         glPushMatrix();
             glRotatef(90.0,0,0,1.0);
             glRotatef(90.0,0,1,0);
@@ -116,21 +115,16 @@ void _levelHandler::drawLevel()
             glTranslatef(0,0,-0.05);
             ground->drawParallax(200.0,1.0);
         glPopMatrix();
-        glDisable(GL_FOG);
         break;
     case 2:
-        //glEnable(GL_FOG);
         glPushMatrix();
             tunnel->drawOBJ();
         glPopMatrix();
-        //glDisable(GL_FOG);
         break;
     case 3:
-        glEnable(GL_FOG);
         glPushMatrix();
             bridge->drawOBJ();
         glPopMatrix();
-        glDisable(GL_FOG);
         break;
     }
 }

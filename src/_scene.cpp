@@ -213,7 +213,7 @@ void _Scene::initGL()
 
     plyr->bounds = 0.6;
 
-    level = 1;
+    level = 3;
     timeLimit = 60000;
 
 
@@ -469,7 +469,6 @@ void _Scene::drawScene()
             }
             myCam->setUpCamera();
 
-            //glEnable(GL_FOG);
             //myCam->setUpCamera();
             glPushMatrix();
                 if (playerHealth.isFlashing()) {
@@ -484,6 +483,7 @@ void _Scene::drawScene()
 
             //drawLevel();
             daySky->drawSkyBox();
+            glEnable(GL_FOG);
             levels->drawLevel();
 
             if (animationTimer->getTicks()>= 10) {
@@ -518,7 +518,9 @@ void _Scene::drawScene()
             //placing score top left
             //char scoreStr[16];
             //sprintf(scoreStr, "%d", totalScore);
+            glDisable(GL_FOG);
             glColor3f(1.0,1.0,1.0);
+
 
             //plyrScore->updateScore(plyr->speed);
             plyrScore->playerScore = totalScore;
@@ -532,7 +534,6 @@ void _Scene::drawScene()
                 textNum->drawText(plyrScore->strScore,0.4);
             glPopMatrix();
 
-            //glDisable(GL_FOG);
             // showing the floating +1 and +4
             if(pickupTextTimer > 0.0){
                 char popupStr[8];
