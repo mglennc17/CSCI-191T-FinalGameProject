@@ -66,3 +66,26 @@ void _textDisplay::drawText(char* str, float fontSize)
     glPopMatrix();
     //glDepthFunc(GL_LEQUAL);
 }
+
+void _textDisplay::drawTime(int mins, int secs, int millis, float fontSize)
+{
+    sprintf(m,"%d",mins);
+    if (mins < 10) {
+        m[1] = m[0];
+        m[0] = '0';
+    }
+    sprintf(s,"%d",secs);
+    if (secs < 10) {
+        s[1] = s[0];
+        s[0] = '0';
+    }
+    sprintf(ms,"%d",millis);
+    if (millis < 10) {
+        ms[1] = ms[0];
+        ms[0] = '0';
+    }
+    char str[20];
+    sprintf(str,"%s%c%s%c%s",m,'N',s,'N',ms);
+    drawText(str,fontSize);
+}
+

@@ -13,10 +13,15 @@ class _textDisplay
 
         void textInit(char *,int,int);
         void drawText(char *,float);
+        void drawTime(int,int,int,float);
 
         float xMin,xMax,yMin,yMax;
         vec3 vertX[4];
         int w,h;
+
+        char m[3];
+        char s[3];
+        char ms[3];
     protected:
 
     private:

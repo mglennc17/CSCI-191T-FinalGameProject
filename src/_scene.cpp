@@ -90,6 +90,7 @@ void _Scene::initGL()
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
     glFogf(GL_FOG_DENSITY,0.01);
+    glFogfv(GL_FOG_COLOR,fogColor);
 
     obstacleMdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");
     obstacleMdl->actionTrigger = obstacleMdl->STAND;
@@ -167,14 +168,25 @@ void _Scene::initGL()
     plyr->turnFrames[5].loadOBJ("models/car/turn6.obj","models/car/nissanWheels.mtl");
     plyr->turnFrames[6].loadOBJ("models/car/turn7.obj","models/car/nissanWheels.mtl");
 
-    tunnel->loadOBJ("models/terrain/tunnel.obj","models/terrain/tunnel.mtl");
+    tunnel->loadOBJ("models/terrain/tunneltest.obj","models/terrain/tunneltest.mtl");
     tunnel->rot.y = 180;
-    tunnel->pos.z = 20;
+    tunnel->pos.z = 0;
     tunnel->scale = 0.25;
 
     vector<char *> Texs;
     Texs.push_back("models/terrain/concrete.png");
     Texs.push_back("models/terrain/tunnel.png");
+    Texs.push_back("models/terrain/emit.png");
+    Texs.push_back("models/terrain/tunnel.png");
+    Texs.push_back("models/terrain/concrete.png");
+    Texs.push_back("models/terrain/tunnel.png");
+    Texs.push_back("models/terrain/emit.png");
+    Texs.push_back("models/terrain/concrete.png");
+    Texs.push_back("models/terrain/tunnel.png");
+    Texs.push_back("models/terrain/emit.png");
+    Texs.push_back("models/terrain/concrete.png");
+    Texs.push_back("models/terrain/tunnel.png");
+    Texs.push_back("models/terrain/emit.png");
     tunnel->textureOBJ(Texs);
 
     bridge->loadOBJ("models/terrain/bridge.obj","models/terrain/bridge.mtl");
@@ -185,6 +197,7 @@ void _Scene::initGL()
     bridge->scale = 0.08;
 
     Texs.clear();
+    Texs.push_back("models/terrain/bridge.png");
     Texs.push_back("models/terrain/bridge.png");
     Texs.push_back("models/terrain/bridge.png");
     bridge->textureOBJ(Texs);
@@ -201,6 +214,7 @@ void _Scene::initGL()
     plyr->bounds = 0.6;
 
     level = 3;
+    timeLimit = 60000;
 
 }
 
@@ -270,6 +284,8 @@ void _Scene::checkCollectibleCollisions()
             coinScore++;
             totalScore += 1;
 
+            timeLimit += 4000;
+
             lastPickupValue = 1;
             pickupTextTimer = 0.8;  // shows points float after collectign coin
 
@@ -295,6 +311,8 @@ void _Scene::checkCollectibleCollisions()
             dollars[i].deactivate();
             dollarScore++;
             totalScore += 4;
+
+            timeLimit += 8000;
 
             lastPickupValue = 4;
             pickupTextTimer = 0.8;
@@ -380,8 +398,9 @@ void _Scene::drawLevel()
         break;
     case 2:
         glPushMatrix();
-            glFogi(GL_FOG_COLOR,0.5);
+            glDisable(GL_FOG);
             daySky->drawSkyBox();
+            glEnable(GL_FOG);
             glRotatef(90.0,0,0,1.0);
             glRotatef(90.0,0,1,0);
             glTranslatef(0,0,10);
@@ -508,8 +527,8 @@ void _Scene::drawScene()
                 glRotatef(180,0,0,1);
                 textNum->drawText(plyrScore->strScore,0.4);
             glPopMatrix();
-            glEnable(GL_DEPTH_TEST);
 
+            glDisable(GL_FOG);
             // showing the floating +1 and +4
             if(pickupTextTimer > 0.0){
                 char popupStr[8];
@@ -520,8 +539,6 @@ void _Scene::drawScene()
                 float lift = (1.0 - t) * 0.5;
 
                 glColor3f(1.0, 1.0, 1.0);
-
-            glDisable(GL_FOG);
 
                 glPushMatrix();
                    /* glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
@@ -537,8 +554,26 @@ void _Scene::drawScene()
 
                 glPopMatrix();
             }
+
+            dur = inGameTimer->getDuration();
+            dur = timeLimit - dur;
+            if (dur <= 0) gameState = gameOver;
+            m = dur/60000;
+            s = (dur % 60000) / 1000;
+            ms = (dur % 1000) / 10;
+            //sprintf(timerStr, "%d%c%d%c%d", m,'N',s,'N',ms);
+            glPushMatrix();
+                glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
+                glTranslatef(1.0,1.8,-3.0 * plyr->speed);
+                glRotatef(180,1,0,0);
+                glRotatef(180,0,0,1);
+                textNum->drawTime(m,s,ms,0.3);
+            glPopMatrix();
+
+            glEnable(GL_DEPTH_TEST);
         }
        else {
+            glDisable(GL_FOG);
             myCam->camReset();
             glPushMatrix();
                 glScalef(4.33,4.33,1.0);
@@ -555,6 +590,7 @@ void _Scene::drawScene()
                 myCam->des = plyr->pos;
                 myCam->eye.z -= 3;
                 myCam->eye.y += 1;
+                inGameTimer->resume();
             }
             else if (pauseMenuElements[pauseExit].clicked) {
                     pauseMenuElements[pauseExit].clicked = false;
@@ -640,6 +676,8 @@ void _Scene::drawScene()
             glTranslatef(0.5f, -0.4f, 0.0f);
             textUpper->drawText((char*)"YOU CANT PARK THERE", 0.2f);
         glPopMatrix();
+
+        glDisable(GL_FOG);
 
         // 4. Buttons – SAME pattern as main menu (no ortho here)
         glPushMatrix();
@@ -765,6 +803,7 @@ void _Scene::drawScene()
             myCam->des = plyr->pos;
             myCam->eye.z -= 3;
             myCam->eye.y += 1;
+            inGameTimer->start();
             gameState = inGame;
             menuMsc->playMusic("sounds/14 Quiet Curves.mp3");
         }
@@ -932,6 +971,8 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (gameState == landing) gameState = mainMenu;
             if (gameState == inGame && wParam == 27 && escKeyRelease) {
                 escKeyRelease = false; paused = !paused;
+                if (paused) inGameTimer->pause();
+                else inGameTimer->resume();
             }
             if (gameState == inGame) {
                 if (wParam == 87) {

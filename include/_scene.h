@@ -23,6 +23,7 @@
 #include <_textDisplay.h>
 #include <_score.h>
 #include <_collectables.h>
+#include <_pauseableTimer.h>
 
 class _Scene
 {
@@ -35,6 +36,7 @@ class _Scene
         double msX,msY,msZ;
 
         _sounds *menuMsc = new _sounds();
+        _pauseableTimer *inGameTimer = new _pauseableTimer();
 
         _light *myLight = new _light();   //light settings
         _collisionCheck *myCol = new _collisionCheck();
@@ -162,6 +164,11 @@ class _Scene
         int numLanes;
 
         int level = 1;
+        float fogColor[4] = {0.41,0.33,0.41,1.0};
+
+        int dur,m,s,ms;
+        int timeLimit; //in milliseconds
+        char timerStr[10];
 
     protected:
 
