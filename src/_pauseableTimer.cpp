@@ -36,5 +36,6 @@ int _pauseableTimer::getDuration()
 {
     nw = chrono::system_clock::now();
     timerDuration = nw - startTime;
+    printf("%f\n",timerDuration.count());
     return timerDuration.count() - pauseDuration.count();
 }

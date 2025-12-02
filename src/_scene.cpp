@@ -122,13 +122,13 @@ void _Scene::initGL()
     gameOverButtons[goPlayAgain].initButton("images/menu/pauseMenuReturn.png", -2.0f, -2.5f);
     gameOverButtons[goMainMenu].initButton("images/menu/pauseMenuExit.png",   2.0f, -2.5f);
 
-    road->parallaxInit("images/textures/road.png");
-    road->xMax = 25;
-    road->yMax = 2;
+    levels->road->parallaxInit("images/textures/road.png");
+    levels->road->xMax = 25;
+    levels->road->yMax = 2;
 
-    ground->parallaxInit("images/textures/dirt.jpg");
-    ground->xMax = 50;
-    ground->yMax = 50;
+    levels->ground->parallaxInit("images/textures/dirt.jpg");
+    levels->ground->xMax = 50;
+    levels->ground->yMax = 50;
 
     //plyr->mdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");//,"models/car/Tex.png");
     //plyr->mdl->actionTrigger = plyr->mdl->STAND;
@@ -168,10 +168,10 @@ void _Scene::initGL()
     plyr->turnFrames[5].loadOBJ("models/car/turn6.obj","models/car/nissanWheels.mtl");
     plyr->turnFrames[6].loadOBJ("models/car/turn7.obj","models/car/nissanWheels.mtl");
 
-    tunnel->loadOBJ("models/terrain/tunneltest.obj","models/terrain/tunneltest.mtl");
-    tunnel->rot.y = 180;
-    tunnel->pos.z = 0;
-    tunnel->scale = 0.25;
+    levels->tunnel->loadOBJ("models/terrain/tunneltest.obj","models/terrain/tunneltest.mtl");
+    levels->tunnel->rot.y = 180;
+    levels->tunnel->pos.z = 0;
+    levels->tunnel->scale = 0.25;
 
     vector<char *> Texs;
     Texs.push_back("models/terrain/concrete.png");
@@ -187,20 +187,20 @@ void _Scene::initGL()
     Texs.push_back("models/terrain/concrete.png");
     Texs.push_back("models/terrain/tunnel.png");
     Texs.push_back("models/terrain/emit.png");
-    tunnel->textureOBJ(Texs);
+    levels->tunnel->textureOBJ(Texs);
 
-    bridge->loadOBJ("models/terrain/bridge.obj","models/terrain/bridge.mtl");
-    bridge->rot.y = 270;
-    bridge->pos.z = -12.5;
-    bridge->pos.x = -30;
-    bridge->pos.y = -15.5;
-    bridge->scale = 0.08;
+    levels->bridge->loadOBJ("models/terrain/bridge.obj","models/terrain/bridge.mtl");
+    levels->bridge->rot.y = 270;
+    levels->bridge->pos.z = -12.5;
+    levels->bridge->pos.x = -30;
+    levels->bridge->pos.y = -15.5;
+    levels->bridge->scale = 0.08;
 
     Texs.clear();
     Texs.push_back("models/terrain/bridge.png");
     Texs.push_back("models/terrain/bridge.png");
     Texs.push_back("models/terrain/bridge.png");
-    bridge->textureOBJ(Texs);
+    levels->bridge->textureOBJ(Texs);
 
 
     //myTexture->loadTexture("images/skybox.png");
@@ -213,8 +213,9 @@ void _Scene::initGL()
 
     plyr->bounds = 0.6;
 
-    level = 3;
+    level = 1;
     timeLimit = 60000;
+
 
 }
 
@@ -468,7 +469,7 @@ void _Scene::drawScene()
             }
             myCam->setUpCamera();
 
-            glEnable(GL_FOG);
+            //glEnable(GL_FOG);
             //myCam->setUpCamera();
             glPushMatrix();
                 if (playerHealth.isFlashing()) {
@@ -481,7 +482,9 @@ void _Scene::drawScene()
             glPopMatrix();
             glColor3f(1.0,1.0,1.0);
 
-            drawLevel();
+            //drawLevel();
+            daySky->drawSkyBox();
+            levels->drawLevel();
 
             if (animationTimer->getTicks()>= 10) {
                 for (int i = 0; i < 10; i++) {
@@ -492,12 +495,13 @@ void _Scene::drawScene()
                         if (numLanes == 4) obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
                     }
                 }
-                tunnel->pos.z += (0.50 * plyr->speed);
-                bridge->pos.x -= (2.0 * plyr->speed);
-                if (tunnel->pos.z >= 50) tunnel->pos.z = 10;
-                if (bridge->pos.x <= -190) bridge->pos.x = -30;
-                ground->prlxScrollAuto("right",0.03 * plyr->speed);
-                road->prlxScrollAuto("right", 0.03 * plyr->speed);
+                //tunnel->pos.z += (0.50 * plyr->speed);
+                //bridge->pos.x -= (2.0 * plyr->speed);
+                //if (tunnel->pos.z >= 50) tunnel->pos.z = 10;
+                //if (bridge->pos.x <= -190) bridge->pos.x = -30;
+                //ground->prlxScrollAuto("right",0.03 * plyr->speed);
+                //road->prlxScrollAuto("right", 0.03 * plyr->speed);
+                levels->updateLevel(plyr->speed);
                 animationTimer->reset();
             }
             for (int i = 0; i < 10; i++){
@@ -528,7 +532,7 @@ void _Scene::drawScene()
                 textNum->drawText(plyrScore->strScore,0.4);
             glPopMatrix();
 
-            glDisable(GL_FOG);
+            //glDisable(GL_FOG);
             // showing the floating +1 and +4
             if(pickupTextTimer > 0.0){
                 char popupStr[8];
@@ -803,6 +807,7 @@ void _Scene::drawScene()
             myCam->des = plyr->pos;
             myCam->eye.z -= 3;
             myCam->eye.y += 1;
+            levels->setUpLevel(level,numLanes,plyr);
             inGameTimer->start();
             gameState = inGame;
             menuMsc->playMusic("sounds/14 Quiet Curves.mp3");

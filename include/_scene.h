@@ -24,6 +24,7 @@
 #include <_score.h>
 #include <_collectables.h>
 #include <_pauseableTimer.h>
+#include <_levelHandler.h>
 
 class _Scene
 {
@@ -53,6 +54,7 @@ class _Scene
         _textDisplay *textNum = new _textDisplay();
         _score *plyrScore = new _score();
         _obstacle obstcls[30];
+        _levelHandler *levels = new _levelHandler();
         GLuint tex;
 
         _objLoader *tunnel = new _objLoader();

@@ -23,9 +23,9 @@ class _pauseableTimer
         chrono::time_point<chrono::system_clock> startTime;
         chrono::time_point<chrono::system_clock> pauseTime;
 
-        chrono::duration<float,milli>t;
-        chrono::duration<float,milli>pauseDuration;
-        chrono::duration<float,milli>timerDuration;
+        chrono::duration<float,milli>t{0};
+        chrono::duration<float,milli>pauseDuration{0};
+        chrono::duration<float,milli>timerDuration{0};
         chrono::time_point<chrono::system_clock> nw;
 
 };
