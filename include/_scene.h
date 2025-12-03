@@ -178,6 +178,8 @@ class _Scene
         int timeLimit; //in milliseconds
         char timerStr[10];
 
+        float fogDensity;
+
     protected:
 
     private:

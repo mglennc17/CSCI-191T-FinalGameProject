@@ -493,8 +493,9 @@ void _Scene::drawScene()
             glColor3f(1.0,1.0,1.0);
 
             //drawLevel();
-            if (level != 2 && !playerHealth.isDead()) daySky->drawSkyBox();
-            glEnable(GL_FOG);
+            if (playerHealth.isDead()) glEnable(GL_FOG);
+            if (level != 2) daySky->drawSkyBox();
+            if (!playerHealth.isDead()) glEnable(GL_FOG);
             levels->drawLevel();
 
             if (animationTimer->getTicks()>= 10 && !playerHealth.isDead()) {
@@ -937,7 +938,9 @@ void _Scene::updateInGame()
     // -----------------------------------------
     if (pendingGameOver)
     {
-        crashDelayTimer -= dt;
+        for (int i = 0; i < 4; i++) fogColor[i] -= (dt / (5 * levels->fogColor[i]));
+        glFogf(GL_FOG_DENSITY,levels->fogDensity + (5 - ((crashDelayTimer -= dt)))/50);
+        glFogfv(GL_FOG_COLOR,fogColor);
 
         // still allow flashing red effect during delay
         playerHealth.update(dt);
@@ -1002,8 +1005,10 @@ void _Scene::checkPlayerObstacleCollisions()
 
             if (playerHealth.isDead()) {
                 // play special third-crash sound
-                glFogfv(GL_FOG_COLOR,fogColor);
-                glFogf(GL_FOG_DENSITY, 0.4);
+                fogColor[0] = levels->fogColor[0];
+                fogColor[1] = levels->fogColor[1];
+                fogColor[2] = levels->fogColor[2];
+                fogColor[3] = levels->fogColor[3];
                 menuMsc->playSounds("sounds/thirdCrash.mp3");
                 plyr->crashed = true;
 

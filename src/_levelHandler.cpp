@@ -65,17 +65,32 @@ void _levelHandler::setUpLevel(int lvl,int &numLanes,_player *plyr)
     case 1:
         //numLanes = 6;
         plyr->bounds = 0.9;
+        fogDensity = fogDensOne;
+        fogColor[0] = fogColorOne[0];
+        fogColor[1] = fogColorOne[1];
+        fogColor[2] = fogColorOne[2];
+        fogColor[3] = fogColorOne[3];
         glFogf(GL_FOG_DENSITY,fogDensOne);
         glFogfv(GL_FOG_COLOR,fogColorOne);
         break;
     case 2:
         //numLanes = 4;
+        fogDensity = fogDensTwo;
+        fogColor[0] = fogColorTwo[0];
+        fogColor[1] = fogColorTwo[1];
+        fogColor[2] = fogColorTwo[2];
+        fogColor[3] = fogColorTwo[3];
         plyr->bounds = 0.6;
         glFogf(GL_FOG_DENSITY,fogDensTwo);
         glFogfv(GL_FOG_COLOR,fogColorTwo);
         break;
     case 3:
         //numLanes = 4;
+        fogDensity = fogDensThr;
+        fogColor[0] = fogColorThr[0];
+        fogColor[1] = fogColorThr[1];
+        fogColor[2] = fogColorThr[2];
+        fogColor[3] = fogColorThr[3];
         plyr->bounds = 0.6;
         glFogf(GL_FOG_DENSITY,fogDensThr);
         glFogfv(GL_FOG_COLOR,fogColorThr);

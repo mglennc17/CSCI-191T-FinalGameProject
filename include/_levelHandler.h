@@ -17,7 +17,10 @@ class _levelHandler
 
         _objLoader *tunnel = new _objLoader();
         _objLoader *bridge = new _objLoader();
+
         int level;
+        float fogDensity;
+        float fogColor[4];
 
         void setUpLevel(int,int &,_player *);
         void updateLevel(float);
