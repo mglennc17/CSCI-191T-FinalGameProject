@@ -65,6 +65,9 @@ void _Scene::resetObstacles()
         //if (i % 3) obstcls[i].pos.x = -0.7;
         //else if (i % 2) obstcls[i].pos.x = 0.7;
         obstcls[i].pos.z = 15.0 + i * 4.0;
+        if (level != 3) { obstcls[i].rot.z = 270; continue; }
+        if (obstcls[i].pos.x < 0) { obstcls[i].rot.z = 270; continue; }
+        obstcls[i].rot.z = 90;
     }
 }
 
@@ -288,14 +291,14 @@ void _Scene::checkCollectibleCollisions()
         float dist2 = dx*dx + dz*dz;
         float rSum = pr + coins[i].size;
 
-        if(dist2 <= rSum * rSum){
+        if(dist2 <= rSum/10){
             coins[i].deactivate();
             coinScore++;
-            totalScore += 1;
+            totalScore += 2;
 
-            timeLimit += 4000;
+            timeLimit += 2000;
 
-            lastPickupValue = 1;
+            lastPickupValue = 2;
             pickupTextTimer = 0.8;  // shows points float after collectign coin
 
             lastPickupPos.x = coins[i].x;
@@ -321,7 +324,7 @@ void _Scene::checkCollectibleCollisions()
             dollarScore++;
             totalScore += 4;
 
-            timeLimit += 8000;
+            timeLimit += 4000;
 
             lastPickupValue = 4;
             pickupTextTimer = 0.8;
@@ -496,11 +499,22 @@ void _Scene::drawScene()
 
             if (animationTimer->getTicks()>= 10 && !playerHealth.isDead()) {
                 for (int i = 0; i < 10; i++) {
-                    obstcls[i].pos.z -= (0.2 * plyr->speed) - 0.05;
+                    if (level != 3 || obstcls[i].pos.x < 0) obstcls[i].pos.z -= (0.2 * plyr->speed) - 0.05;
+                    else obstcls[i].pos.z -= (0.2 * plyr->speed) + 0.05;
                     if(obstcls[i].pos.z <= -20) {
                         obstcls[i].pos.z = 40;
                         if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
-                        if (numLanes == 4) obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
+                        if (numLanes == 4) {
+                            obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
+                            if (obstcls[i].pos.x > 0 && level == 3) obstcls[i].rot.z = 90;
+                            else obstcls[i].rot.z = 270;
+                        }
+                    for (int j = 0;j < 10; j++) {
+                        if (j != i && myCol->isSphereCol(obstcls[i].pos,obstcls[j].pos,.1,.05,0.01)) {
+                            obstcls[i].pos.z  = -20;
+                            break;
+                        }
+                    }
                     }
                 }
                 //tunnel->pos.z += (0.50 * plyr->speed);
@@ -546,8 +560,8 @@ void _Scene::drawScene()
             // showing the floating +1 and +4
             if(pickupTextTimer > 0.0){
                 char popupStr[8];
-                if(lastPickupValue == 4) strcpy(popupStr, "+4");
-                else                     strcpy(popupStr, "+1");
+                if(lastPickupValue == 4) strcpy(popupStr, "Z4");
+                else                     strcpy(popupStr, "Z2");
 
                 float t = pickupTextTimer / 0.8;
                 float lift = (1.0 - t) * 0.5;
@@ -560,7 +574,7 @@ void _Scene::drawScene()
                     glRotatef(180,1,0,0);
                     glRotatef(180,0,0,1);
                     textNum->drawText(popupStr,0.3); */
-                    glTranslatef(lastPickupPos.x, lastPickupPos.y + lift, lastPickupPos.z);
+                    glTranslatef(lastPickupPos.x + 0.4, lastPickupPos.y + lift, lastPickupPos.z);
 
                     glRotatef(180,1,0,0);
                     glRotatef(180,0,0,1);
@@ -724,14 +738,15 @@ void _Scene::drawScene()
             plyr->accelerating = false;
 
             // Reset obstacles to starting positions
-            for (int i = 0; i < 10; i++) {
+            /*for (int i = 0; i < 10; i++) {
                 obstcls[i].rot.x = obstcls[i].rot.y = 0;
                 obstcls[i].rot.z = 270;
                 obstcls[i].scale = 0.1f;
                 obstcls[i].pos.y = 0.11f;
                 obstcls[i].pos.x = 1.05f - (rand6(rng) * 0.30f);
                 obstcls[i].pos.z = 15 + i * 6;
-            }
+            }*/
+            resetObstacles();
 
             // Reset camera like main menu "New Game"
             myCam->eye = plyr->pos;

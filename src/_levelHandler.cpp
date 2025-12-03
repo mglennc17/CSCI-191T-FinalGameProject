@@ -87,15 +87,15 @@ void _levelHandler::updateLevel(float playerSpeed)
 {
     switch (level) {
     case 1:
-        ground->prlxScrollAuto("right",0.06 * playerSpeed);
-        road->prlxScrollAuto("right", 0.06 * playerSpeed);
+        ground->prlxScrollAuto("right",0.045 * playerSpeed);
+        road->prlxScrollAuto("right", 0.045 * playerSpeed);
         break;
     case 2:
-        tunnel->pos.z += (1.0 * playerSpeed);
+        tunnel->pos.z += (0.6 * playerSpeed);
         if (tunnel->pos.z >= 50) tunnel->pos.z = 10;
         break;
     case 3:
-        bridge->pos.x -= (4.0 * playerSpeed);
+        bridge->pos.x -= (3.0 * playerSpeed);
         if (bridge->pos.x <= -190) bridge->pos.x = -30;
         break;
     }

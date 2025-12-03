@@ -27,6 +27,7 @@ void _score::drawScore()
 void _score::updateScore(float speed)
 {
     playerScore += speed;
+    if (playerScore == 0) return;
     int cpy = playerScore;
     for (int i = 0; i < 5; i++) {
         strScore[i] = (cpy % 10) + '0';
