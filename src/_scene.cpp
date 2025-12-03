@@ -148,8 +148,10 @@ void _Scene::initGL()
     menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
 
     textUpper->textInit("images/fonts/upper.png",9,3);
+    textUpperWhite->textInit("images/fonts/upperWhite.png",9,3);
     textLower->textInit("images/fonts/lower.png",9,3);
     textNum->textInit("images/fonts/numEtc.png",9,3);
+    textNumWhite->textInit("images/fonts/numEtcWhite.png",9,3);
 
     plyrScore->resetScore();
 
@@ -488,13 +490,13 @@ void _Scene::drawScene()
             glColor3f(1.0,1.0,1.0);
 
             //drawLevel();
-            if (level != 2) daySky->drawSkyBox();
+            if (level != 2 && !playerHealth.isDead()) daySky->drawSkyBox();
             glEnable(GL_FOG);
             levels->drawLevel();
 
-            if (animationTimer->getTicks()>= 10) {
+            if (animationTimer->getTicks()>= 10 && !playerHealth.isDead()) {
                 for (int i = 0; i < 10; i++) {
-                    obstcls[i].pos.z -= (0.1 * plyr->speed);
+                    obstcls[i].pos.z -= (0.2 * plyr->speed) - 0.05;
                     if(obstcls[i].pos.z <= -20) {
                         obstcls[i].pos.z = 40;
                         if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
@@ -537,7 +539,8 @@ void _Scene::drawScene()
                 glTranslatef(-1.8,1.8,-3.0 * plyr->speed);
                 glRotatef(180,1,0,0);
                 glRotatef(180,0,0,1);
-                textNum->drawText(plyrScore->strScore,0.4);
+                if (level != 2) textNum->drawText(plyrScore->strScore,0.4);
+                else textNumWhite->drawText(plyrScore->strScore,0.4);
             glPopMatrix();
 
             // showing the floating +1 and +4
@@ -561,7 +564,8 @@ void _Scene::drawScene()
 
                     glRotatef(180,1,0,0);
                     glRotatef(180,0,0,1);
-                    textNum->drawText(popupStr, 0.3);
+                    if (level != 2) textNum->drawText(popupStr, 0.3);
+                    else textNumWhite->drawText(popupStr,0.3);
 
                 glPopMatrix();
             }
@@ -578,13 +582,13 @@ void _Scene::drawScene()
                 glTranslatef(1.0,1.8,-3.0 * plyr->speed);
                 glRotatef(180,1,0,0);
                 glRotatef(180,0,0,1);
-                textNum->drawTime(m,s,ms,0.3);
+                if (level != 2) textNum->drawTime(m,s,ms,0.3);
+                else textNumWhite->drawTime(m,s,ms,0.3);
             glPopMatrix();
 
             glEnable(GL_DEPTH_TEST);
         }
        else {
-            glDisable(GL_FOG);
             myCam->camReset();
             glPushMatrix();
                 glScalef(4.33,4.33,1.0);
@@ -641,7 +645,7 @@ void _Scene::drawScene()
 
         glEnable(GL_FOG);
 
-        drawLevel();
+        levels->drawLevel();
 
         for (int i = 0; i < 10; i++) {
             glPushMatrix();
@@ -680,15 +684,14 @@ void _Scene::drawScene()
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
+        glDisable(GL_FOG);
         // Text (uses your PNG font)
         glPushMatrix();
-            glTranslatef(-1.5,0,0);
-            textUpper->drawText((char*)"YOU CRASHED", 0.4f);
-            glTranslatef(0.5f, -0.4f, 0.0f);
-            textUpper->drawText((char*)"YOU CANT PARK THERE", 0.2f);
+            glTranslatef(-2.0,1.0,0);
+            textUpperWhite->drawText((char*)"YOU CRASHED", 0.4f);
+            glTranslatef(0.4f, -0.4f, 0.0f);
+            textUpperWhite->drawText((char*)"YOU CANT PARK THERE", 0.2f);
         glPopMatrix();
-
-        glDisable(GL_FOG);
 
         // 4. Buttons – SAME pattern as main menu (no ortho here)
         glPushMatrix();
@@ -738,6 +741,8 @@ void _Scene::drawScene()
 
             // Reset health
             playerHealth.reset();
+            levels->setUpLevel(level,numLanes,plyr);
+            inGameTimer->start();
 
             // Stay in gameplay, keep game music
             gameState = inGame;
@@ -824,7 +829,7 @@ void _Scene::drawScene()
             }
         }
         else {
-            plyr->movement = plyr->menu;
+        plyr->movement = plyr->menu;
         myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
         myCam->des.x = myCam->des.y = 0;
         myCam->des.z = -10;
@@ -982,6 +987,8 @@ void _Scene::checkPlayerObstacleCollisions()
 
             if (playerHealth.isDead()) {
                 // play special third-crash sound
+                glFogfv(GL_FOG_COLOR,fogColor);
+                glFogf(GL_FOG_DENSITY, 0.4);
                 menuMsc->playSounds("sounds/thirdCrash.mp3");
                 plyr->crashed = true;
 

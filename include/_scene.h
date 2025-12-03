@@ -50,8 +50,10 @@ class _Scene
         _3DModelLoader *obstacleMdl = new _3DModelLoader();
         _objLoader *obj = new _objLoader();
         _textDisplay *textUpper = new _textDisplay();
+        _textDisplay *textUpperWhite = new _textDisplay();
         _textDisplay *textLower = new _textDisplay();
         _textDisplay *textNum = new _textDisplay();
+        _textDisplay *textNumWhite = new _textDisplay();
         _score *plyrScore = new _score();
         _obstacle obstcls[30];
         _levelHandler *levels = new _levelHandler();
@@ -170,7 +172,7 @@ class _Scene
         int numLanes;
 
         int level = 1;
-        float fogColor[4] = {0.41,0.33,0.41,1.0};
+        float fogColor[4] = {0,0,0,1.0};
 
         int dur,m,s,ms;
         int timeLimit; //in milliseconds
