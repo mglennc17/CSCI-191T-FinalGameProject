@@ -17,6 +17,7 @@ class _button
         bool clicked;
 
         vec2 pos;
+        float scale;
 
     protected:
 

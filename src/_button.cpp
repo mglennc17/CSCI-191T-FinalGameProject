@@ -3,6 +3,7 @@
 _button::_button()
 {
     clicked = false;
+    scale = 1.0;
 }
 
 _button::~_button()
@@ -21,6 +22,7 @@ void _button::drawButton(float w, float h, bool hover)
 {
     glPushMatrix();
         glTranslatef(pos.x,pos.y,0);
+        glScalef(scale,scale,1.0);
         if (hover) glScalef(1.1,1.1,1.0);
         btnImage->drawParallax(w,h);
     glPopMatrix();

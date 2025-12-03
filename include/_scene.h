@@ -82,6 +82,9 @@ class _Scene
         _parallax helpMenuBackground;
         _button helpMenuReturn;
 
+        _parallax levelSelectBackground;
+        _button levelSelectButtons[4];
+
         _textDisplay *goText = new _textDisplay();
         enum gameOverButtonsIndex { goPlayAgain = 0, goMainMenu = 1 };
         _button gameOverButtons[2];
@@ -103,6 +106,7 @@ class _Scene
 
         int curLevel;
 
+        bool levelSelect = false;
         bool helpMenu = false;
         bool paused = false;
         bool killWin = false;

@@ -117,6 +117,12 @@ void _Scene::initGL()
     helpMenuBackground.parallaxInit("images/menu/helpMenuBackground.png");
     helpMenuReturn.initButton("images/menu/pauseMenuReturn.png",0,-2.5);
 
+    levelSelectButtons[0].initButton("images/menu/levelOneButton.png",-5.0,-2.5);
+    levelSelectButtons[1].initButton("images/menu/levelTwoButton.png",-1.66,-2.5);
+    levelSelectButtons[2].initButton("images/menu/levelThreeButton.png",1.66,-2.5);
+    levelSelectButtons[3].initButton("images/menu/PauseMenuReturn.png",5.0,-2.5);
+    for (int i = 0; i < 4; i++) levelSelectButtons[i].scale = 0.8;
+
     goText = new _textDisplay();
     goText->textInit("images/fonts/upper.png",8,4);
     gameOverButtons[goPlayAgain].initButton("images/menu/pauseMenuReturn.png", -2.0f, -2.5f);
@@ -170,7 +176,7 @@ void _Scene::initGL()
 
     levels->tunnel->loadOBJ("models/terrain/tunneltest.obj","models/terrain/tunneltest.mtl");
     levels->tunnel->rot.y = 180;
-    levels->tunnel->pos.z = 0;
+    levels->tunnel->pos.z = 20;
     levels->tunnel->scale = 0.25;
 
     vector<char *> Texs;
@@ -482,7 +488,7 @@ void _Scene::drawScene()
             glColor3f(1.0,1.0,1.0);
 
             //drawLevel();
-            daySky->drawSkyBox();
+            if (level != 2) daySky->drawSkyBox();
             glEnable(GL_FOG);
             levels->drawLevel();
 
@@ -770,16 +776,59 @@ void _Scene::drawScene()
 
 
    case mainMenu:
-       plyr->movement = plyr->menu;
-        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
-        myCam->des.x = myCam->des.y = 0;
-        myCam->des.z = -10;
-        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
-        glPushMatrix();
+       glPushMatrix();
             glScalef(4.33,4.33,1.0);
             glColor3f(1.0,1.0,1.0);
             menuBackground.drawParallax(width,height);
         glPopMatrix();
+       if(helpMenu) {
+            glPushMatrix();
+                glScalef(4.33,4.33,1.0);
+                helpMenuBackground.drawParallax(width,height);
+            glPopMatrix();
+            helpMenuReturn.drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0));
+            if (helpMenuReturn.clicked) { helpMenuReturn.clicked = false; helpMenu = false; }
+        }
+        else if (levelSelect) {
+            glPushMatrix();
+                for (int i = 0; i < 4; i++) levelSelectButtons[i].drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,levelSelectButtons[i].pos,0,0,1.8 * levelSelectButtons[i].scale,1.0 * levelSelectButtons[i].scale));
+            glPopMatrix();
+            for (int i = 0; i < 3; i++) {
+                if (levelSelectButtons[i].clicked) {
+                    levelSelectButtons[i].clicked = false;
+                    level = i + 1;
+                    levelSelect = false;
+                    gameState = inGame;
+                    resetObstacles();       // make sure cars are in front again
+                    playerHealth.reset();   // reset health on new game
+                    plyr->rot.x = 0;
+                    plyr->rot.y = 0;
+                    plyr->rot.z = 0;
+                    plyr->scale = 0.15;
+                    plyr->pos.x = plyr->pos.z = 0;
+                    plyr->pos.y = 0.05;
+                    plyr->speed = 0;
+                    myCam->eye = plyr->pos;
+                    myCam->des = plyr->pos;
+                    myCam->eye.z -= 3;
+                    myCam->eye.y += 1;
+                    levels->setUpLevel(level,numLanes,plyr);
+                    inGameTimer->start();
+                    gameState = inGame;
+                    menuMsc->playMusic("sounds/14 Quiet Curves.mp3");
+                }
+            }
+            if (levelSelectButtons[3].clicked) {
+                levelSelectButtons[3].clicked = false;
+                levelSelect = false;
+            }
+        }
+        else {
+            plyr->movement = plyr->menu;
+        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
+        myCam->des.x = myCam->des.y = 0;
+        myCam->des.z = -10;
+        myCam->eye.x = myCam->eye.y = myCam->eye.z = 0;
         glPushMatrix();
             glPushMatrix();
                 plyr->rot.x = 30;
@@ -796,7 +845,7 @@ void _Scene::drawScene()
         glPopMatrix();
         if (mainMenuElements[newGame].clicked) {
             mainMenuElements[newGame].clicked = false;
-            resetObstacles();       // make sure cars are in front again
+            /*resetObstacles();       // make sure cars are in front again
             playerHealth.reset();   // reset health on new game
             plyr->rot.x = 0;
             plyr->rot.y = 0;
@@ -811,20 +860,14 @@ void _Scene::drawScene()
             levels->setUpLevel(level,numLanes,plyr);
             inGameTimer->start();
             gameState = inGame;
-            menuMsc->playMusic("sounds/14 Quiet Curves.mp3");
+            menuMsc->playMusic("sounds/14 Quiet Curves.mp3");*/
+            levelSelect = true;
         }
 
         if (mainMenuElements[help].clicked) { mainMenuElements[help].clicked = false; helpMenu = true; }
         if (mainMenuElements[exit].clicked) { mainMenuElements[exit].clicked = false; killWin = true; }
-
-        if(helpMenu) {
-            glPushMatrix();
-                glScalef(4.33,4.33,1.0);
-                helpMenuBackground.drawParallax(width,height);
-            glPopMatrix();
-            helpMenuReturn.drawButton(width/10,height/10,myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0));
-            if (helpMenuReturn.clicked) { helpMenuReturn.clicked = false; helpMenu = false; }
         }
+
         break;
 
     case landing:
@@ -1016,6 +1059,11 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (gameState == mainMenu) {
                 if (helpMenu) {
                     if (myCol->isPlanoCol(mousePos,helpMenuReturn.pos,0,0,1.8,1.0)) helpMenuReturn.clicked = true;
+                }
+                else if (levelSelect) {
+                    for (int i = 0; i < 4; i++) {
+                        if (myCol->isPlanoCol(mousePos,levelSelectButtons[i].pos,0,0,1.8 * levelSelectButtons[i].scale,1.0 * levelSelectButtons[i].scale)) { levelSelectButtons[i].clicked = true; break; }
+                    }
                 }
                 else if (myCol->isPlanoCol(mousePos,mainMenuElements[newGame].pos,0,0,1.8,1.0)) mainMenuElements[newGame].clicked = true;
                 else if (myCol->isPlanoCol(mousePos,mainMenuElements[help].pos,0,0,1.8,1.0)) mainMenuElements[help].clicked = true;
