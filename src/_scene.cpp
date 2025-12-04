@@ -306,7 +306,7 @@ void _Scene::checkCollectibleCollisions()
             lastPickupPos.z = coins[i].z;
 
             // to add a sound do it here
-           // menuMsc->playSounds("link here ");
+            menuMsc->playSounds("sounds/coinDing.mp3");
         }
     }
 
@@ -334,7 +334,7 @@ void _Scene::checkCollectibleCollisions()
             lastPickupPos.z = dollars[i].z;
 
             //sound
-            //menuMsc->playSounds("link here");
+            menuMsc->playSounds("sounds/cashDing.mp3");
         }
     }
 
@@ -451,12 +451,14 @@ void _Scene::drawScene()
        if (!paused) {
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
+
             myCam->fov = 45 * (plyr->speed/plyr->maxSpeed + 1);
             gluPerspective(myCam->fov,(float)width/(float)height,0.1,1000.0);
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
+            /*
             myCam->des = plyr->pos;
             myCam->des.y += 0.5;
             myCam->rotAngle.x = 180;
@@ -465,6 +467,57 @@ void _Scene::drawScene()
             myCam->rotateXY();
 
             // screen shake when recently hit
+            if (playerHealth.isFlashing()) {// && animationTimer->getTicks() >= 9) {
+                // how strong the shake feels – tweak if too weak/strong
+                const float strength = 0.08;
+
+
+                // rand100(rng) gives [1..100], normalize to [-1..1]
+                float nx = ((float)rand100(rng) / 50.0) - 1.0;
+                float ny = ((float)rand100(rng) / 50.0) - 1.0;
+                float nz = ((float)rand100(rng) / 50.0) - 1.0;
+                myCam->eye.x += nx * strength;
+                myCam->eye.y += ny * strength * 0.5;  // smaller vertical shake
+                myCam->eye.z += nz * strength;
+            }
+            myCam->setUpCamera();
+            */
+            switch(camMode)
+            {
+            case 0: //defualt camera.. mode 0
+                myCam->des = plyr->pos;
+                myCam->des.y += 0.5;
+                myCam->rotAngle.x = 180;
+                myCam->rotAngle.y = 0;
+                myCam->distance = 4.0 / (1 +  2 * (plyr->speed/plyr->maxSpeed));
+                myCam->rotateXY();
+                break;
+            case 1: // driver pov...mode 1
+                myCam->eye = plyr->pos;
+                myCam->eye.y += 0.25; //above car's center
+                myCam->eye.z -= 0.10; // inside car
+
+                // look at road
+                myCam->des = myCam->eye;
+                myCam->des.z += 1.0;
+                myCam->up.x = 0.0;
+                myCam->up.y = 1.0;
+                myCam->up.z = 0.0;
+                break;
+            case 2: // hood view..mode 2
+                myCam->eye = plyr->pos; // in front of car and a bit lower
+                myCam->eye.y += 0.15;   // hood height
+                myCam->eye.z += 0.60;  // front of car
+
+                //look ahead
+                myCam->des = myCam->eye;
+                myCam->des.z += 1.5;
+
+                myCam->up.x = 0.0;
+                myCam->up.y = 1.0;
+                myCam->up.z = 0.0;
+                break;
+            }
             if (playerHealth.isFlashing()) {// && animationTimer->getTicks() >= 9) {
                 // how strong the shake feels – tweak if too weak/strong
                 const float strength = 0.08;
@@ -1060,6 +1113,9 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 if (wParam == 65 && (Apressed == false || Dpressed == false)) { Apressed = true; plyr->movement = plyr->left; }
                 if (wParam == 68 && (Apressed == false || Dpressed == false)) { Dpressed = true; plyr->movement = plyr->right; }
+                if(wParam == 'P'){
+                camMode = (camMode + 1) % 3; // cycle through camera mode 1,2,3
+                }
             }
  //           myInput->keyPressed(mdl3D,mdl3DW);
         break;

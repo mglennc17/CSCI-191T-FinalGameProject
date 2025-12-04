@@ -185,6 +185,8 @@ class _Scene
     private:
          _playerHealth playerHealth;           // new
         void resetObstacles();
+
+        int camMode = 0;  // 0 = current 3rd person view
 };
 
 #endif // _SCENE_H
