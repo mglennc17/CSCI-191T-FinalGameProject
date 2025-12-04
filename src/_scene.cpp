@@ -55,12 +55,12 @@ void _Scene::reSizeScene(int width, int height)
 
 void _Scene::resetObstacles()
 {
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 10; i++) {
         obstcls[i].rot.x = obstcls[i].rot.y = 0;
         obstcls[i].rot.z = 270;
         obstcls[i].scale = 0.1;
         obstcls[i].pos.y = 0.11;
-        if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
+        if (numLanes == 6) obstcls[i].pos.x = 1.2 - (rand6(rng) * (2.0/numLanes));
         if (numLanes == 4) obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
         //if (i % 3) obstcls[i].pos.x = -0.7;
         //else if (i % 2) obstcls[i].pos.x = 0.7;
@@ -504,7 +504,7 @@ void _Scene::drawScene()
                     else obstcls[i].pos.z -= (0.2 * plyr->speed) + 0.05;
                     if(obstcls[i].pos.z <= -20) {
                         obstcls[i].pos.z = 40;
-                        if (numLanes == 6) obstcls[i].pos.x = 1.05 - (rand6(rng) * (2.10/numLanes));
+                        if (numLanes == 6) obstcls[i].pos.x = 1.2 - (rand6(rng) * (2.0/numLanes));
                         if (numLanes == 4) {
                             obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
                             if (obstcls[i].pos.x > 0 && level == 3) obstcls[i].rot.z = 90;
@@ -727,6 +727,7 @@ void _Scene::drawScene()
             plyr->crashed = false;
             gameOverButtons[goPlayAgain].clicked = false;
 
+            levels->setUpLevel(level,numLanes,plyr);
             // Reset player state (same as starting a new game from main menu)
             plyr->rot.x = 0;
             plyr->rot.y = 0;
@@ -757,7 +758,7 @@ void _Scene::drawScene()
 
             // Reset health
             playerHealth.reset();
-            levels->setUpLevel(level,numLanes,plyr);
+            timeLimit = 60000;
             inGameTimer->start();
 
             // Stay in gameplay, keep game music
@@ -818,6 +819,7 @@ void _Scene::drawScene()
                 if (levelSelectButtons[i].clicked) {
                     levelSelectButtons[i].clicked = false;
                     level = i + 1;
+                    levels->setUpLevel(level,numLanes,plyr);
                     levelSelect = false;
                     gameState = inGame;
                     resetObstacles();       // make sure cars are in front again
@@ -833,7 +835,6 @@ void _Scene::drawScene()
                     myCam->des = plyr->pos;
                     myCam->eye.z -= 3;
                     myCam->eye.y += 1;
-                    levels->setUpLevel(level,numLanes,plyr);
                     inGameTimer->start();
                     gameState = inGame;
                     menuMsc->playMusic("sounds/14 Quiet Curves.mp3");

@@ -63,8 +63,9 @@ void _levelHandler::setUpLevel(int lvl,int &numLanes,_player *plyr)
     level = lvl;
     switch (level) {
     case 1:
-        //numLanes = 6;
+        numLanes = 6;
         plyr->bounds = 0.9;
+        plyr->speed = 0.3;
         fogDensity = fogDensOne;
         fogColor[0] = fogColorOne[0];
         fogColor[1] = fogColorOne[1];
@@ -74,7 +75,8 @@ void _levelHandler::setUpLevel(int lvl,int &numLanes,_player *plyr)
         glFogfv(GL_FOG_COLOR,fogColorOne);
         break;
     case 2:
-        //numLanes = 4;
+        numLanes = 4;
+        plyr->speed = 0.3;
         fogDensity = fogDensTwo;
         fogColor[0] = fogColorTwo[0];
         fogColor[1] = fogColorTwo[1];
@@ -85,7 +87,8 @@ void _levelHandler::setUpLevel(int lvl,int &numLanes,_player *plyr)
         glFogfv(GL_FOG_COLOR,fogColorTwo);
         break;
     case 3:
-        //numLanes = 4;
+        numLanes = 4;
+        plyr->speed = 0.3;
         fogDensity = fogDensThr;
         fogColor[0] = fogColorThr[0];
         fogColor[1] = fogColorThr[1];
