@@ -724,6 +724,7 @@ void _Scene::drawScene()
 
         // 5. Handle clicks for game over buttons
         if (gameOverButtons[goPlayAgain].clicked) {
+            plyrScore->resetScore();
             plyr->crashed = false;
             gameOverButtons[goPlayAgain].clicked = false;
 
@@ -765,6 +766,7 @@ void _Scene::drawScene()
             gameState = inGame;
         }
         else if (gameOverButtons[goMainMenu].clicked) {
+            plyrScore->resetScore();
             plyr->crashed = false;
             gameOverButtons[goMainMenu].clicked = false;
 
@@ -835,6 +837,7 @@ void _Scene::drawScene()
                     myCam->des = plyr->pos;
                     myCam->eye.z -= 3;
                     myCam->eye.y += 1;
+                    timeLimit = 60000;
                     inGameTimer->start();
                     gameState = inGame;
                     menuMsc->playMusic("sounds/14 Quiet Curves.mp3");

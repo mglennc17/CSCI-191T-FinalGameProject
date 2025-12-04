@@ -12,6 +12,8 @@ _pauseableTimer::~_pauseableTimer()
 
 void _pauseableTimer::start()
 {
+    pauseDuration -= pauseDuration;
+    timerDuration -= timerDuration;
     startTime = chrono::system_clock::now();
 }
 
