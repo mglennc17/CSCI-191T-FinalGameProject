@@ -13,9 +13,9 @@ class _player
         virtual ~_player();
 
         void drawPlayer();
-        _timer *myTime = new _timer();
+        //_timer *myTime = new _timer();
         //_timer *accelTmr = new _timer();
-        _timer *iFrames = new _timer();
+        //_timer *iFrames = new _timer();
 
         _3DModelLoader *mdl = new _3DModelLoader();
         _3DModelLoader *wpn = new _3DModelLoader();

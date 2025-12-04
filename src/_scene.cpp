@@ -853,7 +853,6 @@ void _Scene::drawScene()
         glPushMatrix();
             glPushMatrix();
                 plyr->rot.x = 30;
-                glColor3f(0.7,0.7,1.0);
                 plyr->drawPlayer();
             glPopMatrix();
             if (animationTimer->getTicks() >= 10) { plyr->rot.y += 0.2; animationTimer->reset(); }

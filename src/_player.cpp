@@ -4,7 +4,6 @@ _player::_player()
 {
     menuRot.x = 30; menuRot.y = 0; menuRot.z = 0;
     menuPos.x = 0; menuPos.y = 0.7; menuPos.z = -7.0;
-    myTime->reset();
     pos = menuPos;
     rot = menuRot;
     scale = 1.0;
@@ -33,12 +32,12 @@ void _player::drawPlayer()
     if(diff.count() > 16 && !crashed && movement != menu) {
 
         if (movement == right && pos.x >= -bounds + 0.01) {
-            if (rot.y > 0) rot.y -= 0.2 * speed;
-            if (rot.y >= -30) rot.y -= 0.2 * speed;
+            if (rot.y > 0) rot.y -= 0.2 * speed * diff.count()/16;
+            if (rot.y >= -30) rot.y -= 0.2 * speed * diff.count()/16;
         }
         else if (movement == left && pos.x <= bounds -0.01) {
-            if (rot.y < 0) rot.y += 0.2 * speed;
-            if (rot.y <= 30) rot.y += 0.2 * speed;
+            if (rot.y < 0) rot.y += 0.2 * speed * diff.count()/16;
+            if (rot.y <= 30) rot.y += 0.2 * speed * diff.count()/16;
         }
         else if (movement != menu) {
             //if (rot.y > 0) rot.y -= 0.4;
@@ -79,7 +78,7 @@ void _player::drawPlayer()
 
     if(diff.count() * (16 * speed) > 16 && !crashed && movement != menu) {
         frameCount++; wheelTmr = chrono::system_clock::now();
-        pos.x += 0.2 * rot.y / ( 270 );
+        pos.x += (0.4 * rot.y / ( 270 )) * (diff.count()/16);
     }
 
     if (pos.x > bounds) pos.x = bounds;
