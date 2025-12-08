@@ -546,6 +546,36 @@ void _Scene::drawScene()
                 plyr->rot.x = 0;
                 plyr->drawPlayer();
             glPopMatrix();
+
+                //adding break lights
+                if(plyr->braking){
+                    glColor3f(1.0, 0.0, 0.0); //bright red
+
+                    float bw = 0.06;
+                    float bh = 0.03;
+                    float zBack = -0.55;
+                    float xOffB = 0.15;
+                    float yOffB = 0.05;
+
+                    glBegin(GL_QUADS);
+                        //right break light
+                        glVertex3f(xOffB - bw, yOffB - bh, zBack);
+                        glVertex3f(xOffB + bw, yOffB - bh, zBack);
+                        glVertex3f(xOffB + bw, yOffB + bh, zBack);
+                        glVertex3f(xOffB - bw, yOffB + bh, zBack);
+
+                        //left brake light
+                        glVertex3f(-xOffB - bw, yOffB - bh, zBack);
+                        glVertex3f(-xOffB + bw, yOffB - bh, zBack);
+                        glVertex3f(-xOffB + bw, yOffB + bh, zBack);
+                        glVertex3f(-xOffB - bw, yOffB + bh, zBack);
+                    glEnd();
+
+                }
+                glEnable(GL_LIGHTING);
+                glEnable(GL_TEXTURE_2D);
+            glPopMatrix();
+
             glColor3f(1.0,1.0,1.0);
 
             //drawLevel();
