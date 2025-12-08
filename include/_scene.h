@@ -134,6 +134,8 @@ class _Scene
 
         float carRot = 0;
 
+        float camOrbitAngle = 0.0; // rotating around car
+
         void updateInGame();
         void checkPlayerObstacleCollisions();
         float crashDelayTimer = 0.0;
@@ -170,6 +172,9 @@ class _Scene
 
         bool Apressed = false;
         bool Dpressed = false;
+
+        bool rotateLeft = false;
+        bool rotateRight = false;
 
         vec2 prevMouse;
         int numLanes;

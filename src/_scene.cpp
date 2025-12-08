@@ -32,6 +32,8 @@ _Scene::_Scene()
 
     showInGameHelp = false;
 
+    camOrbitAngle = 0.0;
+
 }
 
 _Scene::~_Scene()
@@ -460,40 +462,39 @@ void _Scene::drawScene()
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            /*
-            myCam->des = plyr->pos;
-            myCam->des.y += 0.5;
-            myCam->rotAngle.x = 180;
-            myCam->rotAngle.y = 0;
-            myCam->distance = 4.0 / (1 +  2 * (plyr->speed/plyr->maxSpeed));
-            myCam->rotateXY();
-
-            // screen shake when recently hit
-            if (playerHealth.isFlashing()) {// && animationTimer->getTicks() >= 9) {
-                // how strong the shake feels – tweak if too weak/strong
-                const float strength = 0.08;
-
-
-                // rand100(rng) gives [1..100], normalize to [-1..1]
-                float nx = ((float)rand100(rng) / 50.0) - 1.0;
-                float ny = ((float)rand100(rng) / 50.0) - 1.0;
-                float nz = ((float)rand100(rng) / 50.0) - 1.0;
-                myCam->eye.x += nx * strength;
-                myCam->eye.y += ny * strength * 0.5;  // smaller vertical shake
-                myCam->eye.z += nz * strength;
-            }
-            myCam->setUpCamera();
-            */
             switch(camMode)
             {
             case 0: //defualt camera.. mode 0
+            {
+                const float orbitSpeed = 1.5; // rotation speed
+                const float maxOrbit = 75.0; // max degrees it can rotate
+                const float returnSpeed = 2.0; // speed of spring back
+
+                if(rotateLeft) camOrbitAngle += orbitSpeed;
+                if(rotateRight) camOrbitAngle -= orbitSpeed;
+
+                if(!rotateLeft && !rotateRight){
+                    if(camOrbitAngle > 0.0){
+                        camOrbitAngle -= returnSpeed;
+                        if(camOrbitAngle < 0.0) camOrbitAngle = 0.0;
+                    }else if(camOrbitAngle < 0.0){
+                    camOrbitAngle += returnSpeed;
+                    if(camOrbitAngle > 0.0) camOrbitAngle = 0.0;
+                    }
+                }
+
+                if(camOrbitAngle > maxOrbit) camOrbitAngle = maxOrbit;
+                if(camOrbitAngle < -maxOrbit) camOrbitAngle = -maxOrbit;
+
+
                 myCam->des = plyr->pos;
                 myCam->des.y += 0.5;
-                myCam->rotAngle.x = 180;
-                myCam->rotAngle.y = 0;
+                myCam->rotAngle.x = 180 + camOrbitAngle;
+                myCam->rotAngle.y = 0.0;
                 myCam->distance = 4.0 / (1 +  2 * (plyr->speed/plyr->maxSpeed));
                 myCam->rotateXY();
                 break;
+            }
             case 1: // driver pov...mode 1
                 myCam->eye = plyr->pos;
                 myCam->eye.y += 0.25; //above car's center
@@ -1187,6 +1188,13 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if(wParam == 'H'){
                     showInGameHelp = true;
                 }
+                //rotate around car
+                if(wParam == 'J' && camMode == 0){
+                    rotateLeft = true;
+                }
+                if(wParam == 'L' && camMode == 0){
+                    rotateRight = true;
+                }
             }
  //           myInput->keyPressed(mdl3D,mdl3DW);
         break;
@@ -1196,6 +1204,8 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             plyr->movement = plyr->none;
             if (wParam == 87) plyr->accelerating = false;
             if(wParam == 83) plyr->braking = false;
+            if(wParam == 'J') rotateLeft = false;
+            if(wParam == 'L') rotateRight = false;
             if(wParam == 'H') showInGameHelp = false;
             if (wParam == 65) {
                 Apressed = false;
