@@ -143,8 +143,8 @@ class _Scene
 
         // collectibles
         // 50 coins and 25 dollars
-        static const int MAX_COINS = 50;
-        static const int MAX_DOLLARS  = 25;
+        static const int MAX_COINS = 75;
+        static const int MAX_DOLLARS  = 75;
 
         _collectables coins[MAX_COINS];
         _collectables dollars[MAX_DOLLARS];

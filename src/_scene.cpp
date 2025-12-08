@@ -243,7 +243,7 @@ void _Scene::spawnCollectibles()
 
     //adding a 1:7 ratio (dollars are rare). rolls 1 through 8. 1 = dollar and 2-8 = coins
     int roll = (int)rand8(rng);
-    bool spawnDollar = (roll == 1);
+    bool spawnDollar = (roll <= 3);
 
     float laneX = 0;
     float zStart = 0;
@@ -303,7 +303,7 @@ void _Scene::checkCollectibleCollisions()
             timeLimit += 2000;
 
             lastPickupValue = 2;
-            pickupTextTimer = 0.8;  // shows points float after collectign coin
+            pickupTextTimer = 0.8;  // shows points float after collecting coin
 
             lastPickupPos.x = coins[i].x;
             lastPickupPos.y = coins[i].y + 0.3;
@@ -548,33 +548,41 @@ void _Scene::drawScene()
             glPopMatrix();
 
                 //adding break lights
-                if(plyr->braking){
-                    glColor3f(1.0, 0.0, 0.0); //bright red
+                glPushMatrix();
+                    glTranslatef(plyr->pos.x, plyr->pos.y, plyr->pos.z);
+                    glRotatef(plyr->rot.x, 1, 0, 0);
+                    glRotatef(plyr->rot.x, 0, 1, 0);
+                    glRotatef(plyr->rot.x, 0, 0, 1);
+                    glScalef(plyr->scale, plyr->scale, plyr->scale);
 
-                    float bw = 0.06;
-                    float bh = 0.03;
-                    float zBack = -0.55;
-                    float xOffB = 0.15;
-                    float yOffB = 0.05;
+                    glDisable(GL_TEXTURE_2D);
+                    glDisable(GL_LIGHTING);
 
-                    glBegin(GL_QUADS);
+                    if(plyr->braking){
+                        glColor3f(1.0,0.0,0.0);
+
+                        float bw = 0.06;
+                        float bh = 0.03;
+                        float zBack = -0.55;
+                        float xOffB = 0.15;
+                        float yOffB = 0.05;
+
+                        glBegin(GL_QUADS);
                         //right break light
-                        glVertex3f(xOffB - bw, yOffB - bh, zBack);
-                        glVertex3f(xOffB + bw, yOffB - bh, zBack);
-                        glVertex3f(xOffB + bw, yOffB + bh, zBack);
-                        glVertex3f(xOffB - bw, yOffB + bh, zBack);
-
-                        //left brake light
-                        glVertex3f(-xOffB - bw, yOffB - bh, zBack);
-                        glVertex3f(-xOffB + bw, yOffB - bh, zBack);
-                        glVertex3f(-xOffB + bw, yOffB + bh, zBack);
-                        glVertex3f(-xOffB - bw, yOffB + bh, zBack);
-                    glEnd();
-
-                }
-                glEnable(GL_LIGHTING);
-                glEnable(GL_TEXTURE_2D);
-            glPopMatrix();
+                            glVertex3f(xOffB - bw, yOffB - bh, zBack);
+                            glVertex3f(xOffB + bw, yOffB - bh, zBack);
+                            glVertex3f(xOffB + bw, yOffB + bh, zBack);
+                            glVertex3f(xOffB - bw, yOffB + bh, zBack);
+                        // left brake light
+                            glVertex3f(-xOffB - bw, yOffB - bh, zBack);
+                            glVertex3f(-xOffB + bw, yOffB - bh, zBack);
+                            glVertex3f(-xOffB + bw, yOffB + bh, zBack);
+                            glVertex3f(-xOffB - bw, yOffB + bh, zBack);
+                        glEnd();
+                    }
+                    glEnable(GL_LIGHTING);
+                    glEnable(GL_TEXTURE_2D);
+                glPopMatrix();
 
             glColor3f(1.0,1.0,1.0);
 
