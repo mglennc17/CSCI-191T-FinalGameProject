@@ -40,7 +40,13 @@ class _player
         float maxSpeed;
         float accel;
 
+
         bool accelerating;
+
+        //breaking
+        bool braking;
+        float brakeStrength;
+
         chrono::time_point<chrono::system_clock> wheelTmr;
         chrono::time_point<chrono::system_clock> accelTmr;
         chrono::time_point<chrono::system_clock> animTmr;

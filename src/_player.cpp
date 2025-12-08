@@ -11,6 +11,11 @@ _player::_player()
     maxSpeed = 1.0;
     accelerating = false;
     accel = 0.1;
+
+    //for breaking
+    braking = false;
+    brakeStrength = 0.02;
+
     animTmr = chrono::system_clock::now();
     wheelTmr = chrono::system_clock::now();
     prevRot = 0;
@@ -56,7 +61,13 @@ void _player::drawPlayer()
         }
     }
     else {
-        if (speed > 0) speed -= 0.001;
+        //if (speed > 0) speed -= 0.001;
+        if(braking){
+            speed -= brakeStrength;
+        }
+        else{
+            if (speed > 0) speed -= 0.001;
+        }
     }
 
     diff = nw - animTmr;

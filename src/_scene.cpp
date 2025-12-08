@@ -30,6 +30,8 @@ _Scene::_Scene()
     pickupTextTimer = 0.0;
     lastPickupValue = 0;
 
+    showInGameHelp = false;
+
 }
 
 _Scene::~_Scene()
@@ -604,11 +606,11 @@ void _Scene::drawScene()
             glDisable(GL_DEPTH_TEST);
             glPushMatrix();
                 glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
-                glTranslatef(-1.8,1.8,-3.0 * plyr->speed);
+                glTranslatef(1.30,1.8,-3.0 * plyr->speed);
                 glRotatef(180,1,0,0);
                 glRotatef(180,0,0,1);
-                if (level != 2) textNum->drawText(plyrScore->strScore,0.4);
-                else textNumWhite->drawText(plyrScore->strScore,0.4);
+                if (level != 2) textNum->drawText(plyrScore->strScore,0.28);
+                else textNumWhite->drawText(plyrScore->strScore,0.28);
             glPopMatrix();
 
             // showing the floating +1 and +4
@@ -647,13 +649,75 @@ void _Scene::drawScene()
             //sprintf(timerStr, "%d%c%d%c%d", m,'N',s,'N',ms);
             glPushMatrix();
                 glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
-                glTranslatef(1.0,1.8,-3.0 * plyr->speed);
+                glTranslatef(-0.10,1.8,-3.0 * plyr->speed);
                 glRotatef(180,1,0,0);
                 glRotatef(180,0,0,1);
                 if (level != 2) textNum->drawTime(m,s,ms,0.3);
                 else textNumWhite->drawTime(m,s,ms,0.3);
             glPopMatrix();
 
+            glPushMatrix();
+                glTranslatef(myCam->eye.x, myCam->eye.y, myCam->eye.z);
+                glTranslatef(1.30, 1.55, -3.0 * plyr->speed);
+                glRotatef(180,1,0,0);
+                glRotatef(180,0,0,1);
+                if(level != 2){
+                    textUpper->drawText((char*)"PRESS AND HOLD H TO LEARN HOW TO PLAY", 0.12);
+                }
+                else{
+                    textUpperWhite->drawText((char*)"PRESS AND HOLD H TO LEARN HOW TO PLAY", 0.12);
+                }
+            glPopMatrix();
+            if(showInGameHelp){
+                glPushMatrix();
+                    glDisable(GL_TEXTURE_2D);
+                    glColor4f(0.0, 0.0, 0.0, 0.5);
+
+                    glBegin(GL_QUADS);
+                        glVertex3f(-1.9, 1.3, -2.5);
+                        glVertex3f( 1.9, 1.3, -2.5);
+                        glVertex3f( 1.9, -0.5, -2.5);
+                        glVertex3f(-1.9, -0.5, -2.5);
+                    glEnd();
+
+                    glEnable(GL_TEXTURE_2D);
+                glPopMatrix();
+
+                //drawing bullet points for help menu
+                glColor3f(1.0,1.0,1.0);
+
+                glPushMatrix();
+                    glTranslatef(myCam->eye.x, myCam->eye.y, myCam->eye.z);
+                    glTranslatef(-0.80, 1.3, -3.0 * plyr->speed);
+                    glRotatef(180, 1, 0, 0);
+                    glRotatef(180, 0, 0, 1);
+
+                    _textDisplay* helpFont = (level != 2) ? textUpper : textUpperWhite;
+
+                    helpFont->drawText((char*)"HOW TO PLAY", 0.15);
+                    glTranslatef(0.0, -0.12, 0.0);
+
+                    helpFont->drawText((char*)"- W TO ACCELERATE", 0.10);
+                    glTranslatef(0.0, -0.12, 0.0);
+
+                    helpFont->drawText((char*)"- A TO TURN LEFT", 0.10);
+                    glTranslatef(0.0, -0.12, 0.0);
+
+                    helpFont->drawText((char*)"- D TO TURN RIGHT ", 0.10);
+                    glTranslatef(0.0, -0.12, 0.0);
+
+                    helpFont->drawText((char*)"- S TO BRAKE", 0.10);
+                    glTranslatef(0.0, -0.12, 0.0);
+
+                    helpFont->drawText((char*)"- P TO CHANGE POV", 0.10);
+                    glTranslatef(0.0, -0.12, 0.0);
+
+                    helpFont->drawText((char*)"- J TO ROTATE CAMERA LEFT", 0.10);
+                    glTranslatef(0.0, -0.12, 0.0);
+
+                    helpFont->drawText((char*)"- L TO ROTATE CAMERA RIGHT", 0.10);
+                glPopMatrix();
+            }
             glEnable(GL_DEPTH_TEST);
         }
        else {
@@ -1107,14 +1171,21 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else inGameTimer->resume();
             }
             if (gameState == inGame) {
-                if (wParam == 87) {
+                if (wParam == 87) { // W
                     if (!plyr->accelerating) plyr->accelTmr = chrono::system_clock::now();
                     plyr->accelerating = true;
+                }
+                if(wParam == 83){ // S
+                    plyr->braking = true;
+                    plyr->accelerating = false; // stop accelerating if braking
                 }
                 if (wParam == 65 && (Apressed == false || Dpressed == false)) { Apressed = true; plyr->movement = plyr->left; }
                 if (wParam == 68 && (Apressed == false || Dpressed == false)) { Dpressed = true; plyr->movement = plyr->right; }
                 if(wParam == 'P'){
                 camMode = (camMode + 1) % 3; // cycle through camera mode 1,2,3
+                }
+                if(wParam == 'H'){
+                    showInGameHelp = true;
                 }
             }
  //           myInput->keyPressed(mdl3D,mdl3DW);
@@ -1124,6 +1195,8 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             myInput->wParam = wParam;
             plyr->movement = plyr->none;
             if (wParam == 87) plyr->accelerating = false;
+            if(wParam == 83) plyr->braking = false;
+            if(wParam == 'H') showInGameHelp = false;
             if (wParam == 65) {
                 Apressed = false;
                 if (Dpressed == false) plyr->movement = plyr->none;

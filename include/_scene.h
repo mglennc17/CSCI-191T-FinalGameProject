@@ -115,6 +115,9 @@ class _Scene
         bool escKeyRelease = true;
         bool loaded = false;
 
+        // in game help menu
+        bool showInGameHelp = false;
+
         random_device dev;
         mt19937 rng;
         uniform_int_distribution<mt19937::result_type> rand2;
