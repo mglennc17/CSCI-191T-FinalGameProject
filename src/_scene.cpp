@@ -318,7 +318,7 @@ void _Scene::checkCollectibleCollisions()
     for(int i = 0; i < MAX_DOLLARS; ++i){
         if(!dollars[i].active) continue;
 
-        float dx = pz - dollars[i].x;
+        float dx = px - dollars[i].x;
         float dz = pz - dollars[i].z;
         float dist2 = dx*dx + dz*dz;
         float rSum = pr + dollars[i].size;
@@ -467,8 +467,12 @@ void _Scene::drawScene()
             case 0: //defualt camera.. mode 0
             {
                 const float orbitSpeed = 1.5; // rotation speed
-                const float maxOrbit = 75.0; // max degrees it can rotate
+                float maxOrbit = 75.0; // max degrees it can rotate
                 const float returnSpeed = 2.0; // speed of spring back
+
+                if(level == 2){
+                    maxOrbit = 20.0;
+                }
 
                 if(rotateLeft) camOrbitAngle += orbitSpeed;
                 if(rotateRight) camOrbitAngle -= orbitSpeed;
@@ -664,11 +668,7 @@ void _Scene::drawScene()
                 glColor3f(1.0, 1.0, 1.0);
 
                 glPushMatrix();
-                   /* glTranslatef(myCam->eye.x,myCam->eye.y,myCam->eye.z);
-                    glTranslatef(-1.8,1.5,-3.0 * plyr->speed);
-                    glRotatef(180,1,0,0);
-                    glRotatef(180,0,0,1);
-                    textNum->drawText(popupStr,0.3); */
+
                     glTranslatef(lastPickupPos.x + 0.4, lastPickupPos.y + lift, lastPickupPos.z);
 
                     glRotatef(180,1,0,0);
@@ -896,15 +896,6 @@ void _Scene::drawScene()
             plyr->speed = 0.0f;
             plyr->accelerating = false;
 
-            // Reset obstacles to starting positions
-            /*for (int i = 0; i < 10; i++) {
-                obstcls[i].rot.x = obstcls[i].rot.y = 0;
-                obstcls[i].rot.z = 270;
-                obstcls[i].scale = 0.1f;
-                obstcls[i].pos.y = 0.11f;
-                obstcls[i].pos.x = 1.05f - (rand6(rng) * 0.30f);
-                obstcls[i].pos.z = 15 + i * 6;
-            }*/
             resetObstacles();
 
             // Reset camera like main menu "New Game"
@@ -989,6 +980,7 @@ void _Scene::drawScene()
                     plyr->pos.x = plyr->pos.z = 0;
                     plyr->pos.y = 0.05;
                     plyr->speed = 0;
+                    camOrbitAngle = 0.0;  //reset orbit when levels are selected
                     myCam->eye = plyr->pos;
                     myCam->des = plyr->pos;
                     myCam->eye.z -= 3;
