@@ -234,8 +234,28 @@ void _Scene::initGL()
 
 }
 
+void _Scene::resetScoreAndCollectibles()
+{
+    coinScore = 0;
+    dollarScore = 0;
+    totalScore = 0;
 
+    pickupTextTimer = 0.0;
+    lastPickupValue = 0;
 
+    collectableSpawnTimer = 0.0;
+
+    for(int i = 0; i < MAX_COINS; ++i){
+        coins[i].active = false;
+    }
+
+    for(int i = 0; i < MAX_DOLLARS; ++i){
+        dollars[i].active = false;
+    }
+    if(plyrScore){
+        plyrScore->resetScore();
+    }
+}
 void _Scene::spawnCollectibles()
 {
     if(coinScore >= MAX_COINS && dollarScore >= MAX_DOLLARS)
@@ -616,12 +636,6 @@ void _Scene::drawScene()
                     }
                     }
                 }
-                //tunnel->pos.z += (0.50 * plyr->speed);
-                //bridge->pos.x -= (2.0 * plyr->speed);
-                //if (tunnel->pos.z >= 50) tunnel->pos.z = 10;
-                //if (bridge->pos.x <= -190) bridge->pos.x = -30;
-                //ground->prlxScrollAuto("right",0.03 * plyr->speed);
-                //road->prlxScrollAuto("right", 0.03 * plyr->speed);
                 levels->updateLevel(plyr->speed);
                 animationTimer->reset();
             }
@@ -780,8 +794,17 @@ void _Scene::drawScene()
             }
             else if (pauseMenuElements[pauseExit].clicked) {
                     pauseMenuElements[pauseExit].clicked = false;
-                    gameState = mainMenu;
+                    //gameState = mainMenu;
                     paused = false;
+
+                    resetScoreAndCollectibles();
+                    playerHealth.reset();
+                    plyr->crashed = false;
+                    pendingGameOver = false;
+                    justCrashed = false;
+                    timeLimit = 60000;
+                    inGameTimer->start();
+                    gameState = mainMenu;
 
                     plyr->pos = plyr->menuPos;
                     plyr->rot = plyr->menuRot;
@@ -885,6 +908,7 @@ void _Scene::drawScene()
             gameOverButtons[goPlayAgain].clicked = false;
 
             levels->setUpLevel(level,numLanes,plyr);
+            resetScoreAndCollectibles();
             // Reset player state (same as starting a new game from main menu)
             plyr->rot.x = 0;
             plyr->rot.y = 0;
@@ -916,6 +940,7 @@ void _Scene::drawScene()
             plyrScore->resetScore();
             plyr->crashed = false;
             gameOverButtons[goMainMenu].clicked = false;
+            resetScoreAndCollectibles();
 
             // Reset player + obstacles + health
             plyr->rot = plyr->menuRot;
@@ -968,9 +993,14 @@ void _Scene::drawScene()
                 if (levelSelectButtons[i].clicked) {
                     levelSelectButtons[i].clicked = false;
                     level = i + 1;
+
+                    resetScoreAndCollectibles();
+                    playerHealth.reset();
+
                     levels->setUpLevel(level,numLanes,plyr);
                     levelSelect = false;
-                    gameState = inGame;
+                    resetObstacles();
+                    //gameState = inGame;
                     resetObstacles();       // make sure cars are in front again
                     playerHealth.reset();   // reset health on new game
                     plyr->rot.x = 0;
@@ -980,11 +1010,13 @@ void _Scene::drawScene()
                     plyr->pos.x = plyr->pos.z = 0;
                     plyr->pos.y = 0.05;
                     plyr->speed = 0;
+
                     camOrbitAngle = 0.0;  //reset orbit when levels are selected
                     myCam->eye = plyr->pos;
                     myCam->des = plyr->pos;
                     myCam->eye.z -= 3;
                     myCam->eye.y += 1;
+
                     timeLimit = 60000;
                     inGameTimer->start();
                     gameState = inGame;

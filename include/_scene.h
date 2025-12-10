@@ -188,6 +188,8 @@ class _Scene
 
         float fogDensity;
 
+        void resetScoreAndCollectibles();
+
     protected:
 
     private:
