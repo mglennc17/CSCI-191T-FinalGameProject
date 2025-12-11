@@ -320,7 +320,7 @@ void _Scene::checkCollectibleCollisions()
             coinScore++;
             totalScore += 2;
 
-            timeLimit += 2000;
+            timeLimit += 4000;
 
             lastPickupValue = 2;
             pickupTextTimer = 0.8;  // shows points float after collecting coin
@@ -348,7 +348,7 @@ void _Scene::checkCollectibleCollisions()
             dollarScore++;
             totalScore += 4;
 
-            timeLimit += 4000;
+            timeLimit += 8000;
 
             lastPickupValue = 4;
             pickupTextTimer = 0.8;
@@ -674,8 +674,8 @@ void _Scene::drawScene()
             // showing the floating +1 and +4
             if(pickupTextTimer > 0.0){
                 char popupStr[8];
-                if(lastPickupValue == 4) strcpy(popupStr, "Z4");
-                else                     strcpy(popupStr, "Z2");
+                if(lastPickupValue == 4) strcpy(popupStr, "Z4 Z8Q");
+                else                     strcpy(popupStr, "Z2 Z4Q");
 
                 float t = pickupTextTimer / 0.8;
                 float lift = (1.0 - t) * 0.5;
