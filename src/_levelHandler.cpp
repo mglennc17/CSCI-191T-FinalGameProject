@@ -127,6 +127,7 @@ void _levelHandler::drawLevel()
             glRotatef(90.0,0,0,1.0);
             glRotatef(90.0,0,1,0);
             glTranslatef(0,0,10);
+            glColor3f(1.0,1.0,1.0);
             road->drawParallax(200.0,2.0);
             glTranslatef(1,-1,0);
             glScalef(1.0,200.0,1.0);

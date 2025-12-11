@@ -636,6 +636,7 @@ void _Scene::drawScene()
                     }
                     }
                 }
+                updateCollectibles(0.016);
                 levels->updateLevel(plyr->speed);
                 animationTimer->reset();
             }
@@ -885,6 +886,14 @@ void _Scene::drawScene()
             textUpperWhite->drawText((char*)"YOU CRASHED", 0.4f);
             glTranslatef(0.4f, -0.4f, 0.0f);
             textUpperWhite->drawText((char*)"YOU CANT PARK THERE", 0.2f);
+            glTranslatef(0,-0.4,0);
+            textUpperWhite->drawText("FINAL SCORE ",0.2);
+            glTranslatef(1.7,0,0);
+            textNumWhite->drawText("N ",0.2);
+            glTranslatef(0.2,0,0);
+//            textNumWhite->drawText("N ",0.2);
+            //glTranslated(0.2,0,0);
+            textNumWhite->drawText(plyrScore->strScore,0.25);
         glPopMatrix();
 
         // 4. Buttons – SAME pattern as main menu (no ortho here)
@@ -1143,7 +1152,6 @@ void _Scene::updateInGame()
     playerHealth.update(dt);
 
     checkPlayerObstacleCollisions();
-    updateCollectibles(dt);
     checkCollectibleCollisions();
 
     // Update floating “+1 / +4” timer
@@ -1197,7 +1205,8 @@ void _Scene::checkPlayerObstacleCollisions()
 
                 // start countdown to game over
                 pendingGameOver = true;
-                crashDelayTimer = 5.0f;
+                crashDelayTimer = 3.0f;
+                inGameTimer->pause();
 
                 // freeze gameplay movement
                 plyr->speed = 0.0;

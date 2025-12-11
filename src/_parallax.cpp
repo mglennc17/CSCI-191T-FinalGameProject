@@ -17,6 +17,7 @@ _parallax::~_parallax()
 }
 void _parallax::drawParallax(float w, float h)
 {
+
     glDisable(GL_LIGHTING);
     btex->bindTexture();
 
