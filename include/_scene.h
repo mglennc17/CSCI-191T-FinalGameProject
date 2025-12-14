@@ -25,6 +25,7 @@
 #include <_collectables.h>
 #include <_pauseableTimer.h>
 #include <_levelHandler.h>
+#include <_saveManager.h>
 
 class _Scene
 {
@@ -140,6 +141,8 @@ class _Scene
         void checkPlayerObstacleCollisions();
         float crashDelayTimer = 0.0;
         bool pendingGameOver = false;
+        enum GameOverReason { GO_CRASHED, GO_TIMEOUT };
+        GameOverReason gameOverReason;
 
         // collectibles
         // 50 coins and 25 dollars
@@ -189,6 +192,10 @@ class _Scene
         float fogDensity;
 
         void resetScoreAndCollectibles();
+
+        _saveManager save;
+        bool lastPickupWasMoney;
+
 
     protected:
 

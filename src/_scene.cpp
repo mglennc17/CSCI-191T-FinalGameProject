@@ -34,6 +34,9 @@ _Scene::_Scene()
 
     camOrbitAngle = 0.0;
 
+    gameOverReason = GO_CRASHED;
+    lastPickupWasMoney = false;
+
 }
 
 _Scene::~_Scene()
@@ -231,197 +234,9 @@ void _Scene::initGL()
     level = 3;
     timeLimit = 60000;
 
-
-}
-
-void _Scene::resetScoreAndCollectibles()
-{
-    coinScore = 0;
-    dollarScore = 0;
-    totalScore = 0;
-
-    pickupTextTimer = 0.0;
-    lastPickupValue = 0;
-
-    collectableSpawnTimer = 0.0;
-
-    for(int i = 0; i < MAX_COINS; ++i){
-        coins[i].active = false;
-    }
-
-    for(int i = 0; i < MAX_DOLLARS; ++i){
-        dollars[i].active = false;
-    }
-    if(plyrScore){
-        plyrScore->resetScore();
-    }
-}
-void _Scene::spawnCollectibles()
-{
-    if(coinScore >= MAX_COINS && dollarScore >= MAX_DOLLARS)
-        return;
-
-    //adding a 1:7 ratio (dollars are rare). rolls 1 through 8. 1 = dollar and 2-8 = coins
-    int roll = (int)rand8(rng);
-    bool spawnDollar = (roll <= 3);
-
-    float laneX = 0;
-    float zStart = 0;
-
-    if(spawnDollar && dollarScore < MAX_DOLLARS){
-        //spawn in active dollar (dollar that haven't got collected)
-        for(int i = 0; i < MAX_DOLLARS; ++i){
-            if(!dollars[i].active){
-                if (numLanes == 6) laneX = 1.05 - (rand6(rng) * 0.30);
-                else if (numLanes == 4) laneX = 0.9 - (rand4(rng) * 1.4 / numLanes);
-                zStart = 20.0 + (float)(rand6(rng) * 5.0);
-
-                dollars[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/dollar.png");
-
-                break;
-            }
-        }
-    }else{
-        if(coinScore >=MAX_COINS)return;
-
-        for(int i = 0; i < MAX_COINS; ++i){
-            if(!coins[i].active){
-                if (numLanes == 6) laneX = 1.05 - (rand6(rng) * 0.30);
-                else if (numLanes == 4) laneX = 0.9 - (rand4(rng) * 1.4 / numLanes);
-
-                zStart = 20.0 + (float)(rand6(rng) * 5.0);
-
-                coins[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/coin.png");
-                break;
-            }
-        }
-    }
-}
-
-void _Scene::checkCollectibleCollisions()
-{
-     if(gameState != inGame) return;
-
-    float px = plyr->pos.x;
-    float pz = plyr->pos.z;
-    float pr = 0.3;   // player radius
-
-    // coins
-    for(int i = 0; i < MAX_COINS; ++i){
-        if(!coins[i].active) continue;
-
-        float dx = px - coins[i].x;
-        float dz = pz - coins[i].z;
-        float dist2 = dx*dx + dz*dz;
-        float rSum = pr + coins[i].size;
-
-        if(dist2 <= rSum/10){
-            coins[i].deactivate();
-            coinScore++;
-            totalScore += 2;
-
-            timeLimit += 4000;
-
-            lastPickupValue = 2;
-            pickupTextTimer = 0.8;  // shows points float after collecting coin
-
-            lastPickupPos.x = coins[i].x;
-            lastPickupPos.y = coins[i].y + 0.3;
-            lastPickupPos.z = coins[i].z;
-
-            // to add a sound do it here
-            menuMsc->playSounds("sounds/coinDing.mp3");
-        }
-    }
-
-    //dollars
-    for(int i = 0; i < MAX_DOLLARS; ++i){
-        if(!dollars[i].active) continue;
-
-        float dx = px - dollars[i].x;
-        float dz = pz - dollars[i].z;
-        float dist2 = dx*dx + dz*dz;
-        float rSum = pr + dollars[i].size;
-
-        if(dist2 <= rSum * rSum){
-            dollars[i].deactivate();
-            dollarScore++;
-            totalScore += 4;
-
-            timeLimit += 8000;
-
-            lastPickupValue = 4;
-            pickupTextTimer = 0.8;
-
-            lastPickupPos.x = dollars[i].x;
-            lastPickupPos.y = dollars[i].y + 0.3;
-            lastPickupPos.z = dollars[i].z;
-
-            //sound
-            menuMsc->playSounds("sounds/cashDing.mp3");
-        }
-    }
-
-}
-
-void _Scene::updateCollectibles(float dt)
-{
-    //adding spinning animation to all collectibles
-    for(int i = 0; i < MAX_COINS; ++i){
-        if(!coins[i].active) continue;
-        coins[i].rotZ += coins[i].spinSpeed * dt;
-        if(coins[i].rotZ > 360.0) coins[i].rotZ -= 360.0;
-    }
-
-    for(int i = 0; i < MAX_DOLLARS; ++i){
-        if(!dollars[i].active) continue;
-        dollars[i].rotZ += dollars[i].spinSpeed * dt;
-        if(dollars[i].rotZ > 360.0) dollars[i].rotZ -= 360.0;
-    }
+    save.load();
 
 
-    //spawning timer
-    collectableSpawnTimer += dt;
-
-    // spawn something ever 5 seconds
-    if(collectableSpawnTimer >= 5.0){
-        collectableSpawnTimer = 0.0;
-
-        if(rand2(rng) == 1){
-            spawnCollectibles();
-        }
-    }
-
-    // move active collectibles with the road
-    if(animationTimer->getTicks() >= 10){
-        for(int i = 0; i < MAX_COINS; ++i){
-            if(!coins[i].active) continue;
-            coins[i].z -= (0.1 * plyr->speed);
-            if(coins[i].z <= -20.0){
-                coins[i].active = false;
-            }
-        }
-        for(int i = 0; i < MAX_DOLLARS; ++i){
-            if(!dollars[i].active)continue;
-            dollars[i].z -= (0.1 * plyr->speed);
-            if(dollars[i].z <= -20.0){
-                dollars[i].active = false;
-            }
-        }
-    }
-}
-
-bool _Scene::isSafeCollectibleSpawn(float lanx, float zStart)
-{
-    const float safeZ = 5.0;  // the minimum space allowed for collectibles to spawn near a car
-    for(int i = 0; i < 10; ++i){  // 10 is the amount of cars we have
-        float dz = fabs(zStart - obstcls[i].pos.z);
-
-        if(dz < safeZ){
-            return false;
-        }
-    }
-    return true;
 }
 
 void _Scene::drawLevel()
@@ -674,8 +489,17 @@ void _Scene::drawScene()
             // showing the floating +1 and +4
             if(pickupTextTimer > 0.0){
                 char popupStr[8];
-                if(lastPickupValue == 4) strcpy(popupStr, "Z4 Z8Q");
-                else                     strcpy(popupStr, "Z2 Z4Q");
+
+                if (lastPickupWasMoney){
+                    strcpy(popupStr, "$1");
+                }
+                else if (lastPickupValue == 4){
+                    strcpy(popupStr, "Z4 Z8Q");
+                }
+                else {
+                    strcpy(popupStr, "Z2 Z4Q");
+                }
+
 
                 float t = pickupTextTimer / 0.8;
                 float lift = (1.0 - t) * 0.5;
@@ -691,12 +515,21 @@ void _Scene::drawScene()
                     if (level != 2) textNum->drawText(popupStr, 0.3);
                     else textNumWhite->drawText(popupStr,0.3);
 
+
                 glPopMatrix();
             }
 
             dur = inGameTimer->getDuration();
             dur = timeLimit - dur;
-            if (dur <= 0) gameState = gameOver;
+            if (dur <= 0) {
+                gameOverReason = GO_TIMEOUT;
+
+                // play time-out sound
+                menuMsc->playSounds("sounds/timeUp.mp3");
+
+                gameState = gameOver;
+            }
+
             m = dur/60000;
             s = (dur % 60000) / 1000;
             ms = (dur % 1000) / 10;
@@ -815,7 +648,9 @@ void _Scene::drawScene()
 
         }
         break;
-      case gameOver:
+
+    case gameOver:
+    {
         // 1. Draw the world frozen (same camera as inGame but no updateInGame)
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -839,7 +674,6 @@ void _Scene::drawScene()
         glPopMatrix();
 
         glEnable(GL_FOG);
-
         levels->drawLevel();
 
         for (int i = 0; i < 10; i++) {
@@ -870,7 +704,6 @@ void _Scene::drawScene()
             glVertex2f(0,      height);
         glEnd();
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        //glDisable(GL_BLEND);
 
         // 3. Go back to the same projection style that the menu uses
         glMatrixMode(GL_PROJECTION);
@@ -880,20 +713,33 @@ void _Scene::drawScene()
         glLoadIdentity();
 
         glDisable(GL_FOG);
-        // Text (uses your PNG font)
+
+        // ----------------------------
+        // TEXT: crash vs timeout
+        // ----------------------------
         glPushMatrix();
-            glTranslatef(-2.0,1.0,0);
-            textUpperWhite->drawText((char*)"YOU CRASHED", 0.4f);
-            glTranslatef(0.4f, -0.4f, 0.0f);
-            textUpperWhite->drawText((char*)"YOU CANT PARK THERE", 0.2f);
-            glTranslatef(0,-0.4,0);
-            textUpperWhite->drawText("FINAL SCORE ",0.2);
-            glTranslatef(1.7,0,0);
-            textNumWhite->drawText("N ",0.2);
-            glTranslatef(0.2,0,0);
-//            textNumWhite->drawText("N ",0.2);
-            //glTranslated(0.2,0,0);
-            textNumWhite->drawText(plyrScore->strScore,0.25);
+            glTranslatef(-2.0, 1.0, 0);
+
+            if (gameOverReason == GO_TIMEOUT) {
+                textUpperWhite->drawText((char*)"TIME IS UP", 0.4f);
+                glTranslatef(0.0f, -0.4f, 0.0f);
+                textUpperWhite->drawText((char*)"TRY AGAIN", 0.2f);
+            } else {
+                // default = crashed
+                textUpperWhite->drawText((char*)"YOU CRASHED", 0.4f);
+                glTranslatef(0.4f, -0.4f, 0.0f);
+                textUpperWhite->drawText((char*)"YOU CANT PARK THERE", 0.2f);
+            }
+
+            // FINAL SCORE (same either way)
+            glTranslatef(0.0f, -0.4f, 0.0f);
+            textUpperWhite->drawText((char*)"FINAL SCORE", 0.2f);
+
+            glTranslatef(1.7f, 0.0f, 0.0f);
+            textNumWhite->drawText((char*)"N ", 0.2f);
+
+            glTranslatef(0.2f, 0.0f, 0.0f);
+            textNumWhite->drawText(plyrScore->strScore, 0.25f);
         glPopMatrix();
 
         // 4. Buttons – SAME pattern as main menu (no ortho here)
@@ -918,31 +764,28 @@ void _Scene::drawScene()
 
             levels->setUpLevel(level,numLanes,plyr);
             resetScoreAndCollectibles();
-            // Reset player state (same as starting a new game from main menu)
+
             plyr->rot.x = 0;
             plyr->rot.y = 0;
             plyr->rot.z = 0;
-            //plyr->scale = 0.1f;
             plyr->pos.x = 0.0f;
-            //plyr->pos.z = 0.0f;
-            //plyr->pos.y = 0.11f;
             plyr->speed = 0.0f;
             plyr->accelerating = false;
 
             resetObstacles();
 
-            // Reset camera like main menu "New Game"
             myCam->eye = plyr->pos;
             myCam->des = plyr->pos;
             myCam->eye.z -= 3.0f;
             myCam->eye.y += 1.0f;
 
-            // Reset health
             playerHealth.reset();
             timeLimit = 60000;
             inGameTimer->start();
 
-            // Stay in gameplay, keep game music
+            // IMPORTANT: reset reason so next game over is clean
+            gameOverReason = GO_CRASHED;
+
             gameState = inGame;
         }
         else if (gameOverButtons[goMainMenu].clicked) {
@@ -951,7 +794,6 @@ void _Scene::drawScene()
             gameOverButtons[goMainMenu].clicked = false;
             resetScoreAndCollectibles();
 
-            // Reset player + obstacles + health
             plyr->rot = plyr->menuRot;
             plyr->scale = 1.0f;
             plyr->pos = plyr->menuPos;
@@ -969,14 +811,18 @@ void _Scene::drawScene()
 
             playerHealth.reset();
 
-            // Switch back to menu music
+            // reset reason
+            gameOverReason = GO_CRASHED;
+
             menuMsc->playMusic("sounds/04 GARAGE TALK.mp3");
             gameState = mainMenu;
         }
 
         glEnable(GL_DEPTH_TEST);
-        justCrashed = false;    // we’ve shown the screen now
+        justCrashed = false;
         break;
+    }
+
 
 
 
@@ -1097,6 +943,200 @@ void _Scene::drawScene()
    }
 }
 
+void _Scene::resetScoreAndCollectibles()
+{
+    coinScore = 0;
+    dollarScore = 0;
+    totalScore = 0;
+
+    pickupTextTimer = 0.0;
+    lastPickupValue = 0;
+
+    collectableSpawnTimer = 0.0;
+
+    for(int i = 0; i < MAX_COINS; ++i){
+        coins[i].active = false;
+    }
+
+    for(int i = 0; i < MAX_DOLLARS; ++i){
+        dollars[i].active = false;
+    }
+    if(plyrScore){
+        plyrScore->resetScore();
+    }
+}
+void _Scene::spawnCollectibles()
+{
+    if(coinScore >= MAX_COINS && dollarScore >= MAX_DOLLARS)
+        return;
+
+    //adding a 1:7 ratio (dollars are rare). rolls 1 through 8. 1 = dollar and 2-8 = coins
+    int roll = (int)rand8(rng);
+    bool spawnDollar = (roll <= 3);
+
+    float laneX = 0;
+    float zStart = 0;
+
+    if(spawnDollar && dollarScore < MAX_DOLLARS){
+        //spawn in active dollar (dollar that haven't got collected)
+        for(int i = 0; i < MAX_DOLLARS; ++i){
+            if(!dollars[i].active){
+                if (numLanes == 6) laneX = 1.05 - (rand6(rng) * 0.30);
+                else if (numLanes == 4) laneX = 0.9 - (rand4(rng) * 1.4 / numLanes);
+                zStart = 20.0 + (float)(rand6(rng) * 5.0);
+
+                dollars[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/dollar.png");
+
+                break;
+            }
+        }
+    }else{
+        if(coinScore >=MAX_COINS)return;
+
+        for(int i = 0; i < MAX_COINS; ++i){
+            if(!coins[i].active){
+                if (numLanes == 6) laneX = 1.05 - (rand6(rng) * 0.30);
+                else if (numLanes == 4) laneX = 0.9 - (rand4(rng) * 1.4 / numLanes);
+
+                zStart = 20.0 + (float)(rand6(rng) * 5.0);
+
+                coins[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/coin.png");
+                break;
+            }
+        }
+    }
+}
+
+void _Scene::checkCollectibleCollisions()
+{
+     if(gameState != inGame) return;
+
+    float px = plyr->pos.x;
+    float pz = plyr->pos.z;
+    float pr = 0.3;   // player radius
+
+    // coins (for increasing score and extending time)
+    for(int i = 0; i < MAX_COINS; ++i){
+        if(!coins[i].active) continue;
+
+        float dx = px - coins[i].x;
+        float dz = pz - coins[i].z;
+        float dist2 = dx*dx + dz*dz;
+        float rSum = pr + coins[i].size;
+
+        if(dist2 <= rSum/10){
+            coins[i].deactivate();
+            coinScore++;
+            totalScore += 2;
+
+            timeLimit += 4000;
+
+            lastPickupValue = 2;
+            pickupTextTimer = 0.8;  // shows points float after collecting coin
+
+            lastPickupPos.x = coins[i].x;
+            lastPickupPos.y = coins[i].y + 0.3;
+            lastPickupPos.z = coins[i].z;
+
+            // to add a sound do it here
+            menuMsc->playSounds("sounds/coinDing.mp3");
+        }
+    }
+
+    //dollars
+    for(int i = 0; i < MAX_DOLLARS; ++i){
+        if(!dollars[i].active) continue;
+
+        float dx = px - dollars[i].x;
+        float dz = pz - dollars[i].z;
+        float dist2 = dx*dx + dz*dz;
+        float rSum = pr + dollars[i].size;
+
+        if(dist2 <= rSum * rSum){
+            dollars[i].deactivate();
+
+            // add money
+            save.money += 1;
+
+            // auto save immediately
+            save.save();
+
+            // popup: +$1
+            lastPickupWasMoney = true;
+            pickupTextTimer = 0.8;
+
+            lastPickupPos.x = dollars[i].x;
+            lastPickupPos.y = dollars[i].y + 0.3f;
+            lastPickupPos.z = dollars[i].z;
+
+            //sound
+            menuMsc->playSounds("sounds/cashDing.mp3");
+        }
+    }
+}
+
+
+void _Scene::updateCollectibles(float dt)
+{
+    //adding spinning animation to all collectibles
+    for(int i = 0; i < MAX_COINS; ++i){
+        if(!coins[i].active) continue;
+        coins[i].rotZ += coins[i].spinSpeed * dt;
+        if(coins[i].rotZ > 360.0) coins[i].rotZ -= 360.0;
+    }
+
+    for(int i = 0; i < MAX_DOLLARS; ++i){
+        if(!dollars[i].active) continue;
+        dollars[i].rotZ += dollars[i].spinSpeed * dt;
+        if(dollars[i].rotZ > 360.0) dollars[i].rotZ -= 360.0;
+    }
+
+
+    //spawning timer
+    collectableSpawnTimer += dt;
+
+    // spawn something ever 5 seconds
+    if(collectableSpawnTimer >= 5.0){
+        collectableSpawnTimer = 0.0;
+
+        if(rand2(rng) == 1){
+            spawnCollectibles();
+        }
+    }
+
+    // move active collectibles with the road
+    if(animationTimer->getTicks() >= 10){
+        for(int i = 0; i < MAX_COINS; ++i){
+            if(!coins[i].active) continue;
+            coins[i].z -= (0.1 * plyr->speed);
+            if(coins[i].z <= -20.0){
+                coins[i].active = false;
+            }
+        }
+        for(int i = 0; i < MAX_DOLLARS; ++i){
+            if(!dollars[i].active)continue;
+            dollars[i].z -= (0.1 * plyr->speed);
+            if(dollars[i].z <= -20.0){
+                dollars[i].active = false;
+            }
+        }
+    }
+}
+
+bool _Scene::isSafeCollectibleSpawn(float lanx, float zStart)
+{
+    const float safeZ = 5.0;  // the minimum space allowed for collectibles to spawn near a car
+    for(int i = 0; i < 10; ++i){  // 10 is the amount of cars we have
+        float dz = fabs(zStart - obstcls[i].pos.z);
+
+        if(dz < safeZ){
+            return false;
+        }
+    }
+    return true;
+}
+
+
 void _Scene::mouseMapping(int x, int y)
 {
     GLint viewPort[4];
@@ -1125,9 +1165,7 @@ void _Scene::updateInGame()
     // Approximate 60 FPS for now
     const float dt = 0.016f;
 
-    // -----------------------------------------
     // 1. Handle delayed Game Over (third crash)
-    // -----------------------------------------
     if (pendingGameOver)
     {
         for (int i = 0; i < 4; i++) fogColor[i] -= (dt / (5 * levels->fogColor[i]));
@@ -1146,19 +1184,20 @@ void _Scene::updateInGame()
         return;
     }
 
-    // -----------------------------------------
     // 2. Normal gameplay updates
-    // -----------------------------------------
     playerHealth.update(dt);
 
     checkPlayerObstacleCollisions();
     checkCollectibleCollisions();
 
-    // Update floating “+1 / +4” timer
+    // Update floating popup timer (+2/+4 or +$1)
     if (pickupTextTimer > 0.0f) {
         pickupTextTimer -= dt;
-        if (pickupTextTimer < 0.0f)
+
+        if (pickupTextTimer <= 0.0f) {
             pickupTextTimer = 0.0f;
+            lastPickupWasMoney = false;   // reset when popup finishes
+        }
     }
 }
 
@@ -1195,11 +1234,17 @@ void _Scene::checkPlayerObstacleCollisions()
             playerHealth.registerHit();
 
             if (playerHealth.isDead()) {
-                // play special third-crash sound
+
+                // mark reason for game over
+                gameOverReason = GO_CRASHED;
+
+                // reset fog to level defaults
                 fogColor[0] = levels->fogColor[0];
                 fogColor[1] = levels->fogColor[1];
                 fogColor[2] = levels->fogColor[2];
                 fogColor[3] = levels->fogColor[3];
+
+                // play special third-crash sound
                 menuMsc->playSounds("sounds/thirdCrash.mp3");
                 plyr->crashed = true;
 
