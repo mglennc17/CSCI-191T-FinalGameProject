@@ -126,6 +126,7 @@ bool _objLoader::loadOBJ(const char* path, const char* mtl)
     tex_id = myTex->textID;
 }
 
+
 void _objLoader::drawOBJ()
 {
     glPushMatrix();
@@ -179,6 +180,8 @@ void _objLoader::drawOBJ()
 
     //glFlush();
 }
+
+
 
 void _objLoader::textureOBJ(vector<char*> files)
 {

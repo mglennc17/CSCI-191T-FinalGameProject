@@ -26,6 +26,7 @@
 #include <_pauseableTimer.h>
 #include <_levelHandler.h>
 #include <_saveManager.h>
+#include <_particleSystem.h>
 
 class _Scene
 {
@@ -196,6 +197,12 @@ class _Scene
         _saveManager save;
         bool lastPickupWasMoney;
 
+
+        _3DModelLoader* obstacleMdlFocus;
+        _3DModelLoader* obstacleMdlJeep;
+
+
+        _particleSystem dust;
 
     protected:
 

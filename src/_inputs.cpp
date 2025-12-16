@@ -189,9 +189,6 @@ void _inputs::keyPressed(_camera* cm)
      }
 }
 
-
-
-
 void _inputs::keyUp(_sprite* mySprite)
 {
     mySprite->actionTrigger = mySprite->STAND;

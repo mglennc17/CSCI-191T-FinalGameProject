@@ -36,12 +36,22 @@ void _textDisplay::drawText(char* str, float fontSize)
     glScalef(1.0 * fontSize,1.0 * fontSize,1.0);
     for (int i = 0; i < strlen(str); i++) {
 
+        /*
         // handle special characters first
         if (str[i] == '$') idx = 14;        // row 1, col 5 on your numEtc sheet
         else if (str[i] == ' ') idx = 26;   // your space tile
         else if (isalpha(str[i])) idx = toupper(str[i]) - 'A';
         else if (isdigit(str[i])) idx = str[i] - '0';
         else idx = 26; // fallback to space
+        */
+// handle special characters first
+if (str[i] == '$') idx = 14;
+else if (str[i] == '"') idx = 18;   // " → s
+else if (str[i] == ' ') idx = 26;
+else if (isalpha(str[i])) idx = toupper(str[i]) - 'A';
+else if (isdigit(str[i])) idx = str[i] - '0';
+else idx = 26;
+
 
     /*for (int i = 0; i < strlen(str); i++) {
         if (isalpha(str[i])) idx = str[i] - 'A';

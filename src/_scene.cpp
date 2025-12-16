@@ -2,7 +2,9 @@
 #include <cmath>
 #include <cstdio>
 
+
 _Scene::_Scene()
+    : dust(700)
 {
     //ctor
     rng = mt19937(dev());
@@ -37,12 +39,98 @@ _Scene::_Scene()
     gameOverReason = GO_CRASHED;
     lastPickupWasMoney = false;
 
+    obstacleMdlFocus = new _3DModelLoader();
+    obstacleMdlJeep  = new _3DModelLoader();
 }
+
 
 _Scene::~_Scene()
 {
     //dtor
+
+    // 3D Models
+    delete obstacleMdlFocus;
+    obstacleMdlFocus = nullptr;
+    delete obstacleMdlJeep;
+    obstacleMdlJeep  = nullptr;
+
+    delete obstacleMdl;
+    obstacleMdl = nullptr;
+    delete mdl3D;
+    mdl3D = nullptr;
+    delete mdl3DW;
+    mdl3DW = nullptr;
+
+    // Core systems / helpers
+    delete menuMsc;
+    menuMsc = nullptr;
+    delete inGameTimer;
+    inGameTimer = nullptr;
+
+    delete myLight;
+    myLight = nullptr;
+    delete myCol;
+    myCol = nullptr;
+    delete myInput;
+    myInput = nullptr;
+    delete myTexture;
+    myTexture = nullptr;
+    delete mySprite;
+    mySprite = nullptr;
+    delete animationTimer;
+    animationTimer = nullptr;
+    delete myCam;
+    myCam = nullptr;
+    delete plyr;
+    plyr = nullptr;
+
+    // Obj loaders
+    delete obj;
+    obj = nullptr;
+    delete tunnel;
+    tunnel = nullptr;
+    delete bridge;
+    bridge = nullptr;
+
+    // Text
+    delete textUpper;
+    textUpper = nullptr;
+    delete textUpperWhite;
+    textUpperWhite = nullptr;
+    delete textLower;
+    textLower = nullptr;
+    delete textNum;
+    textNum = nullptr;
+    delete textNumWhite;
+    textNumWhite = nullptr;
+    delete goText;
+    goText = nullptr;
+
+    // Score / levels
+    delete plyrScore;
+    plyrScore = nullptr;
+    delete levels;
+    levels = nullptr;
+
+    // Skyboxes
+    delete carShop;
+    carShop = nullptr;
+    delete daySky;
+    daySky = nullptr;
+    delete duskSky;
+    duskSky = nullptr;
+    delete nightSky;
+    nightSky = nullptr;
+
+    // Parallax layers
+    delete road;
+    road = nullptr;
+    delete ground;
+    ground = nullptr;
+    delete landingPage;
+    landingPage = nullptr;
 }
+
 
 void _Scene::reSizeScene(int width, int height)
 {
@@ -60,23 +148,48 @@ void _Scene::reSizeScene(int width, int height)
     glLoadIdentity();             // calling identity matrix
 }
 
+
 void _Scene::resetObstacles()
 {
     for (int i = 0; i < 10; i++) {
+
+        // start each obstacle with a consistent baseline
         obstcls[i].rot.x = obstcls[i].rot.y = 0;
         obstcls[i].rot.z = 270;
-        obstcls[i].scale = 0.1;
-        obstcls[i].pos.y = 0.11;
-        if (numLanes == 6) obstcls[i].pos.x = 1.2 - (rand6(rng) * (2.0/numLanes));
-        if (numLanes == 4) obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
-        //if (i % 3) obstcls[i].pos.x = -0.7;
-        //else if (i % 2) obstcls[i].pos.x = 0.7;
-        obstcls[i].pos.z = 15.0 + i * 4.0;
+
+        // reference size
+        obstcls[i].scale = 0.1f;
+        obstcls[i].pos.y = 0.11f;
+
+        // Default = Focus
+        obstcls[i].modelType     = 0;     // 0 = Focus, 1 = Jeep
+        obstcls[i].modelScaleFix = 1.0f;  // Focus unchanged
+        obstcls[i].modelYFix     = 0.0f;
+        obstcls[i].modelYawFix = 0.0f;
+
+
+        // Example: every other obstacle uses Jeep (scaled down)
+        if (i % 2 == 0) {
+            obstcls[i].modelType     = 1;
+            obstcls[i].modelScaleFix = 0.08f;  // size
+            obstcls[i].modelYFix     = 0.02f;   // y
+            obstcls[i].modelYawFix = 90.0f;   // rotation
+
+        }
+
+        // lane randomization
+        if (numLanes == 6) obstcls[i].pos.x = 1.2f - (rand6(rng) * (2.0f/numLanes));
+        if (numLanes == 4) obstcls[i].pos.x = 0.9f - (rand4(rng) * (1.4f/numLanes));
+
+        obstcls[i].pos.z = 15.0f + i * 4.0f;
+
+        // direction facing rules
         if (level != 3) { obstcls[i].rot.z = 270; continue; }
         if (obstcls[i].pos.x < 0) { obstcls[i].rot.z = 270; continue; }
         obstcls[i].rot.z = 90;
     }
 }
+
 
 void _Scene::initGL()
 {
@@ -102,7 +215,15 @@ void _Scene::initGL()
     glFogf(GL_FOG_DENSITY,0.01);
     glFogfv(GL_FOG_COLOR,fogColor);
 
-    obstacleMdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");
+    //obstacleMdl->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");
+
+
+    obstacleMdlFocus->initModel("models/car/Ford_Focus.md2","models/car/Tex.png");
+    obstacleMdlFocus->actionTrigger = obstacleMdlFocus->STAND;
+
+    obstacleMdlJeep->initModel("models/car/jeep.md2","models/car/jeep1.png");
+    obstacleMdlJeep->actionTrigger = obstacleMdlJeep->STAND;
+
     obstacleMdl->actionTrigger = obstacleMdl->STAND;
 
     daySky->skyBoxInit();
@@ -235,9 +356,8 @@ void _Scene::initGL()
     timeLimit = 60000;
 
     save.load();
-
-
 }
+
 
 void _Scene::drawLevel()
 {
@@ -273,6 +393,7 @@ void _Scene::drawLevel()
     }
 }
 
+
 void _Scene::drawScene()
 {
 
@@ -288,6 +409,9 @@ void _Scene::drawScene()
    switch (gameState) {
    case inGame:
        if (!paused) {
+
+            const float dt = 0.016f;
+
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
 
@@ -361,7 +485,7 @@ void _Scene::drawScene()
                 break;
             }
             if (playerHealth.isFlashing()) {// && animationTimer->getTicks() >= 9) {
-                // how strong the shake feels – tweak if too weak/strong
+                // how strong the shake feels tweak if too weak/strong
                 const float strength = 0.08;
 
 
@@ -437,6 +561,7 @@ void _Scene::drawScene()
                     else obstcls[i].pos.z -= (0.2 * plyr->speed) + 0.05;
                     if(obstcls[i].pos.z <= -20) {
                         obstcls[i].pos.z = 40;
+
                         if (numLanes == 6) obstcls[i].pos.x = 1.2 - (rand6(rng) * (2.0/numLanes));
                         if (numLanes == 4) {
                             obstcls[i].pos.x = 0.9 - (rand4(rng) * (1.4/numLanes));
@@ -455,11 +580,27 @@ void _Scene::drawScene()
                 levels->updateLevel(plyr->speed);
                 animationTimer->reset();
             }
+            /*
             for (int i = 0; i < 10; i++){
                 glPushMatrix();
                 obstcls[i].drawObstacle(obstacleMdl);
                 glPopMatrix();
             }
+            */
+            for (int i = 0; i < 10; i++) {
+                glPushMatrix();
+
+                    _3DModelLoader* mdl = obstacleMdlFocus;   // 0 = Focus
+
+                    if (obstcls[i].modelType == 1)
+                        mdl = obstacleMdlJeep;                // 1 = Jeep
+
+                        obstcls[i].drawObstacle(mdl);
+
+                    glPopMatrix();
+            }
+
+
 
             //drawing coin and dollar
             for(int i = 0; i < MAX_COINS; ++i)
@@ -471,6 +612,9 @@ void _Scene::drawScene()
             //sprintf(scoreStr, "%d", totalScore);
             glDisable(GL_FOG);
             glColor3f(1.0,1.0,1.0);
+
+            dust.update(dt);
+            dust.draw();
 
 
             //plyrScore->updateScore(plyr->speed);
@@ -486,7 +630,7 @@ void _Scene::drawScene()
                 else textNumWhite->drawText(plyrScore->strScore,0.28);
             glPopMatrix();
 
-            // showing the floating +1 and +4
+            // showing the floating +1 for dollar and +4 for yellow coin(time increaser)
             if(pickupTextTimer > 0.0){
                 char popupStr[8];
 
@@ -497,7 +641,7 @@ void _Scene::drawScene()
                     strcpy(popupStr, "Z4 Z8Q");
                 }
                 else {
-                    strcpy(popupStr, "Z2 Z4Q");
+                    strcpy(popupStr, "Z4");
                 }
 
 
@@ -714,9 +858,7 @@ void _Scene::drawScene()
 
         glDisable(GL_FOG);
 
-        // ----------------------------
         // TEXT: crash vs timeout
-        // ----------------------------
         glPushMatrix();
             glTranslatef(-2.0, 1.0, 0);
 
@@ -731,7 +873,7 @@ void _Scene::drawScene()
                 textUpperWhite->drawText((char*)"YOU CANT PARK THERE", 0.2f);
             }
 
-            // FINAL SCORE (same either way)
+            // FINAL SCORE
             glTranslatef(0.0f, -0.4f, 0.0f);
             textUpperWhite->drawText((char*)"FINAL SCORE", 0.2f);
 
@@ -742,7 +884,7 @@ void _Scene::drawScene()
             textNumWhite->drawText(plyrScore->strScore, 0.25f);
         glPopMatrix();
 
-        // 4. Buttons – SAME pattern as main menu (no ortho here)
+        // 4. Buttons SAME pattern as main menu
         glPushMatrix();
             gameOverButtons[goPlayAgain].drawButton(
                 width/10,
@@ -783,7 +925,7 @@ void _Scene::drawScene()
             timeLimit = 60000;
             inGameTimer->start();
 
-            // IMPORTANT: reset reason so next game over is clean
+            // reset reason so next game over is clean
             gameOverReason = GO_CRASHED;
 
             gameState = inGame;
@@ -822,9 +964,6 @@ void _Scene::drawScene()
         justCrashed = false;
         break;
     }
-
-
-
 
    case mainMenu:
        glPushMatrix();
@@ -943,6 +1082,7 @@ void _Scene::drawScene()
    }
 }
 
+
 void _Scene::resetScoreAndCollectibles()
 {
     coinScore = 0;
@@ -965,12 +1105,14 @@ void _Scene::resetScoreAndCollectibles()
         plyrScore->resetScore();
     }
 }
+
+
 void _Scene::spawnCollectibles()
 {
     if(coinScore >= MAX_COINS && dollarScore >= MAX_DOLLARS)
         return;
 
-    //adding a 1:7 ratio (dollars are rare). rolls 1 through 8. 1 = dollar and 2-8 = coins
+    //adding a 1:7 ratio, dollars
     int roll = (int)rand8(rng);
     bool spawnDollar = (roll <= 3);
 
@@ -1000,12 +1142,13 @@ void _Scene::spawnCollectibles()
 
                 zStart = 20.0 + (float)(rand6(rng) * 5.0);
 
-                coins[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/coin.png");
+                coins[i].init(laneX, 0.2, zStart, 0.08, (char*)"images/collectibles/coin1.png");
                 break;
             }
         }
     }
 }
+
 
 void _Scene::checkCollectibleCollisions()
 {
@@ -1039,7 +1182,7 @@ void _Scene::checkCollectibleCollisions()
             lastPickupPos.z = coins[i].z;
 
             // to add a sound do it here
-            menuMsc->playSounds("sounds/coinDing.mp3");
+            menuMsc->playSounds("sounds/coinDing2.mp3");
         }
     }
 
@@ -1123,6 +1266,7 @@ void _Scene::updateCollectibles(float dt)
     }
 }
 
+
 bool _Scene::isSafeCollectibleSpawn(float lanx, float zStart)
 {
     const float safeZ = 5.0;  // the minimum space allowed for collectibles to spawn near a car
@@ -1160,12 +1304,13 @@ void _Scene::mouseMapping(int x, int y)
     gluUnProject(winX,winY,winZ,projectionM,ModelViewM,viewPort,&msX,&msY,&msZ);
 }
 
+
 void _Scene::updateInGame()
 {
-    // Approximate 60 FPS for now
+    // 60fps
     const float dt = 0.016f;
 
-    // 1. Handle delayed Game Over (third crash)
+    // handle delayed Game Over (third crash)
     if (pendingGameOver)
     {
         for (int i = 0; i < 4; i++) fogColor[i] -= (dt / (5 * levels->fogColor[i]));
@@ -1180,11 +1325,11 @@ void _Scene::updateInGame()
             gameState = gameOver;
         }
 
-        // Do NOT continue normal gameplay updates
+        // don't continue normal gameplay updates
         return;
     }
 
-    // 2. Normal gameplay updates
+    // Normal gameplay updates
     playerHealth.update(dt);
 
     checkPlayerObstacleCollisions();
@@ -1200,6 +1345,7 @@ void _Scene::updateInGame()
         }
     }
 }
+
 
 void _Scene::checkPlayerObstacleCollisions()
 {
@@ -1288,6 +1434,25 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else inGameTimer->resume();
             }
             if (gameState == inGame) {
+
+                // NEW: spawn dust on A / D / S
+                // Emits behind rear wheels in world space.
+                    auto emitRearDust = [&]() {
+                    // Based on your brake-light offsets:
+                    // xOffB ~ 0.15, zBack ~ -0.55, yOffB ~ 0.05
+                    float xOff = 0.15f * plyr->scale;
+                    float yOff = -0.1f * plyr->scale;
+                    float zBack = -2.0f * plyr->scale;
+
+                    float baseX = plyr->pos.x;
+                    float baseY = plyr->pos.y + yOff;
+                    float baseZ = plyr->pos.z + zBack;
+
+                    // left + right rear wheel puffs
+                    dust.emitDust(baseX - xOff, baseY, baseZ, 10);
+                    dust.emitDust(baseX + xOff, baseY, baseZ, 10);
+                };
+
                 if (wParam == 87) { // W
                     if (!plyr->accelerating) plyr->accelTmr = chrono::system_clock::now();
                     plyr->accelerating = true;
@@ -1295,9 +1460,24 @@ int _Scene::winMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if(wParam == 83){ // S
                     plyr->braking = true;
                     plyr->accelerating = false; // stop accelerating if braking
+                    // NEW: dust on braking
+                    emitRearDust();
                 }
-                if (wParam == 65 && (Apressed == false || Dpressed == false)) { Apressed = true; plyr->movement = plyr->left; }
-                if (wParam == 68 && (Apressed == false || Dpressed == false)) { Dpressed = true; plyr->movement = plyr->right; }
+                if (wParam == 65 && (Apressed == false || Dpressed == false)) {
+                    Apressed = true;
+                    plyr->movement = plyr->left;
+
+                    // NEW: dust on turning left
+                    emitRearDust();
+                }
+                if (wParam == 68 && (Apressed == false || Dpressed == false)) {
+                    Dpressed = true;
+                    plyr->movement = plyr->right;
+
+                    // NEW: dust on turning right
+                    emitRearDust();
+                }
+
                 if(wParam == 'P'){
                 camMode = (camMode + 1) % 3; // cycle through camera mode 1,2,3
                 }

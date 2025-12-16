@@ -13,7 +13,7 @@ class _playerHealth
             hitTimer  = 0.0;
         }
 
-        // Call this when a collision is detected
+        // call this when a collision is detected
         void registerHit()
         {
             // Only start a new hit window if we're not already in one
@@ -24,7 +24,7 @@ class _playerHealth
             }
         }
 
-        // Call once per frame with a small dt
+        // call once per frame with a small dt
         void update(float dt)
         {
             if (isHit) {

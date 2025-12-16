@@ -16,6 +16,13 @@ class _obstacle
         vec3 rot;
         float scale;
 
+        int modelType;          // 0 = Focus, 1 = Jeep 2 = Humvee
+        float modelScaleFix;    // extra per-model scaling multiplier
+        float modelYFix;        // extra y offset if needed
+        float modelYawFix;   // extra rotate to make this model face forward
+
+
+
     protected:
 
     private:

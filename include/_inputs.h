@@ -40,6 +40,7 @@ class _inputs
 
         WPARAM wParam;
         LPARAM lParam;
+
     protected:
 
     private:

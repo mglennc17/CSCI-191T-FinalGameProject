@@ -147,4 +147,3 @@ void _levelHandler::drawLevel()
         break;
     }
 }
-

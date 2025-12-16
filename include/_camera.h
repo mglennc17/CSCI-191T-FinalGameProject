@@ -20,7 +20,7 @@ class _camera
 
         enum{FORWARD,BACKWARD,LEFT,RIGHT};
 
-        void camInit(); //initilize the camera
+        void camInit(); //initialize the camera
         void camReset();// reset to original settings
 
         void rotateXY(); // rotate around in xy directions

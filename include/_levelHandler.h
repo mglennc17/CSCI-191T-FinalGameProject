@@ -30,13 +30,13 @@ class _levelHandler
 
     private:
 
-    float fogColorOne[4] = {0.4,0.4,0.43,1.0};
-    float fogColorTwo[4] = {0,0,0.01,1.0};
-    float fogColorThr[4] = {0.41,0.33,0.41,1.0};
+        float fogColorOne[4] = {0.4,0.4,0.43,1.0};
+        float fogColorTwo[4] = {0,0,0.01,1.0};
+        float fogColorThr[4] = {0.41,0.33,0.41,1.0};
 
-    float fogDensOne = 0.001;
-    float fogDensTwo = 0.2;
-    float fogDensThr = 0.03;
+        float fogDensOne = 0.001;
+        float fogDensTwo = 0.2;
+        float fogDensThr = 0.03;
 };
 
 #endif // _LEVELHANDLER_H
