@@ -354,7 +354,6 @@ void _Scene::initGL()
 
     level = 3;
     timeLimit = 60000;
-
     save.load();
 }
 
